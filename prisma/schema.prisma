@@ -1,0 +1,144 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ========== SECRET LINK MODEL ==========
+model SecretLink {
+  id                  String    @id @default(cuid())
+  token               String    @unique
+  linkToken           String?   @unique
+  
+  // User Info
+  partnerName         String
+  yourName            String
+  customerEmail       String
+  question            String    @default("Will you marry me?")
+  
+  // Template & Media
+  templateType        String    @default("default")
+  mediaUrls           Json      @default("[]")
+  musicTrack          String?
+  effectType          String?
+  filterType          String?
+  fontStyle           String?
+  
+  // View & Access Control
+  maxViews            Int       @default(2)
+  currentViews        Int       @default(0)
+  isActive            Boolean   @default(false)
+  expiresAt           DateTime
+  
+  // Payment Info
+  paymentStatus       String    @default("pending") // pending | verified | failed
+  paymentAmount       Float?
+  planType            String?
+  userEmail           String
+  transactionId       String    @unique
+  
+  // Verification
+  verificationToken   String?
+  verificationHash    String?
+  verifiedAt          DateTime?
+  verifiedBy          String?
+  tokenExpiresAt      DateTime?
+  
+  // Tracking
+  accessLog           AccessLog[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([token])
+  @@index([transactionId])
+  @@index([userEmail])
+  @@index([isActive])
+  @@index([expiresAt])
+}
+
+// ========== ACCESS LOG MODEL ==========
+model AccessLog {
+  id                String    @id @default(cuid())
+  secretLink        SecretLink @relation(fields: [secretLinkId], references: [id], onDelete: Cascade)
+  secretLinkId      String
+  
+  ipAddress         String?
+  userAgent         String?
+  viewNumber        Int
+  accessedAt        DateTime  @default(now())
+  
+  @@index([secretLinkId])
+}
+
+// ========== CUSTOM REQUEST MODEL ==========
+model CustomRequest {
+  id                String    @id @default(cuid())
+  
+  // User Info
+  customerName      String
+  customerEmail     String
+  phoneNumber       String?
+  
+  // Request Details
+  requestType       String    @default("order") // order | feedback | idea
+  description       String
+  referenceImages   Json      @default("[]")
+  budget            Float?
+  deadline          DateTime?
+  rating            Int?      // For feedback (1-5)
+  
+  // Status
+  status            String    @default("pending") // pending | in-progress | completed | rejected
+  notes             String?
+  
+  // Admin
+  assignedTo        String?
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([status])
+  @@index([customerEmail])
+  @@index([requestType])
+}
+
+// ========== ADMIN/USER MODEL ==========
+model Admin {
+  id                String    @id @default(cuid())
+  username          String    @unique
+  passwordHash      String
+  email             String    @unique
+  role              String    @default("admin")
+  
+  isActive          Boolean   @default(true)
+  lastLogin         DateTime?
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([email])
+}
+
+// ========== TEMPLATE CONFIG MODEL ==========
+model TemplateConfig {
+  id                String    @id @default(cuid())
+  templateId        String    @unique
+  templateName      String
+  description       String?
+  
+  isActive          Boolean   @default(true)
+  thumbnailUrl      String?
+  previewUrl        String?
+  
+  usageCount        Int       @default(0)
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}

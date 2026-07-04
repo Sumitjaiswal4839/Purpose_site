@@ -1,0 +1,413 @@
+ΓÜá Slow filesystem detected. The benchmark took 1096ms. If D:\Codingh\purpose_site\.next/dev is a network drive, consider moving it to a local folder.
+See more: https://nextjs.org/docs/app/guides/local-development
+Error: Cannot find module './serve-static'
+Require stack:
+- D:\Codingh\purpose_site\node_modules\next\dist\server\image-optimizer.js
+- D:\Codingh\purpose_site\node_modules\next\dist\server\next-server.js
+- D:\Codingh\purpose_site\node_modules\next\dist\server\dev\next-dev-server.js
+- D:\Codingh\purpose_site\node_modules\next\dist\server\next.js
+- D:\Codingh\purpose_site\node_modules\next\dist\server\lib\start-server.js
+    at ignore-listed frames {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'D:\\Codingh\\purpose_site\\node_modules\\next\\dist\\server\\image-optimizer.js',
+    'D:\\Codingh\\purpose_site\\node_modules\\next\\dist\\server\\next-server.js',
+    'D:\\Codingh\\purpose_site\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js',
+    'D:\\Codingh\\purpose_site\\node_modules\\next\\dist\\server\\next.js',
+    'D:\\Codingh\\purpose_site\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+Γ¿» Error: Failed to load external module next/dist/compiled/next-server/pages-turbo.runtime.dev.js: Error: Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:
+  - react:      19.2.5
+  - react-dom:  19.2.7
+Learn more: https://react.dev/warnings/version-mismatch
+    at module evaluation (D:\Codingh\purpose_site\.next\dev\server\chunks\ssr\[externals]__0.o~_~l._.js:22:35)
+    at Object.<anonymous> (D:\Codingh\purpose_site\.next\dev\server\pages\_document.js:4:3)
+Error: Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:
+  - react:      19.2.5
+  - react-dom:  19.2.7
+Learn more: https://react.dev/warnings/version-mismatch
+    at ignore-listed frames
+ΓÜá Fast Refresh had to perform a full reload when ./node_modules/next/dist/client/script.js changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/ideas. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/admin. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Failed to fetch RSC payload for http://localhost:3000/ideas. Falling back to browser navigation. TypeError: NetworkError when attempting to fetch resource.
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Image with src "https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1474487548417-781cb71495f3?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1549471013-3364d7220b75?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1474487548417-781cb71495f3?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1549471013-3364d7220b75?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1507504031003-b417219a0fde?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Image with src "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=800" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1522383225653-ed111181a951?q=80&w=800" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1516410529446-2c777cb7366d?q=80&w=800" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=800" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1474487548417-781cb71495f3?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1549471013-3364d7220b75?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1474487548417-781cb71495f3?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1549471013-3364d7220b75?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1507504031003-b417219a0fde?q=80&w=800&auto=format&fit=crop" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+Γ¿» Error: Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:
+  - react:      19.2.5
+  - react-dom:  19.2.7
+Learn more: https://react.dev/warnings/version-mismatch
+    at ignore-listed frames
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+Error: Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:
+  - react:      19.2.5
+  - react-dom:  19.2.7
+Learn more: https://react.dev/warnings/version-mismatch
+    at ignore-listed frames
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+Error: Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:
+  - react:      19.2.5
+  - react-dom:  19.2.7
+Learn more: https://react.dev/warnings/version-mismatch
+    at ignore-listed frames
+Γ¿» Error: Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:
+  - react:      19.2.5
+  - react-dom:  19.2.7
+Learn more: https://react.dev/warnings/version-mismatch
+    at ignore-listed frames
+Error: Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:
+  - react:      19.2.5
+  - react-dom:  19.2.7
+Learn more: https://react.dev/warnings/version-mismatch
+    at ignore-listed frames
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+Error: Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:
+  - react:      19.2.5
+  - react-dom:  19.2.7
+Learn more: https://react.dev/warnings/version-mismatch
+    at ignore-listed frames
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 
+[browser] ./src/app/(main)/ideas/page.tsx:46:38
+Expected ',', got 'ident'
+  44 |
+  45 |   const ideas = [
+> 46 |     { category: "romantic", title: ""Our Journey" Timeline",     desc: "First chat se ab tak ki kaha...
+     |                                      ^^^
+  47 |     { category: "romantic", title: "Voice-over Memories",        desc: "Har memory ke saath voice-ov...
+  48 |     { category: "romantic", title: "Future Vision",              desc: "Video of your plans: '5 saal...
+  49 |     { category: "romantic", title: "B&W to Colorful",            desc: "Black & white past evolving ...
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(main)/ideas/page.tsx [Client Component Browser]
+    ./src/app/(main)/ideas/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(main)/ideas/page.tsx [Client Component SSR]
+    ./src/app/(main)/ideas/page.tsx [Server Component] 

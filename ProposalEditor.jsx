@@ -360,6 +360,20 @@ function Canvas({ layers, selectedLayerId, activeFilter, onSelectLayer }) {
               {layer.content}
             </div>
           )}
+          {layer.type === "image" && (
+            <img 
+              src={layer.src} 
+              alt="Slide" 
+              style={{ 
+                width: layer.width ? `${layer.width}px` : "160px", 
+                height: layer.height ? `${layer.height}px` : "100px", 
+                objectFit: "cover", 
+                borderRadius: 8, 
+                border: "2px solid white",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.5)"
+              }} 
+            />
+          )}
           {layer.type === "shape" && layer.shape === "heart" && (
             <div style={{ fontSize: layer.size, animation: "pulseHeart 1.5s ease-in-out infinite" }}>❤️</div>
           )}
@@ -649,23 +663,46 @@ function PropertyInspector({ layer, onUpdate }) {
 // ============================================================
 // MAIN APP
 // ============================================================
-export default function ProposalEditor() {
-  const [state, dispatch] = useReducer(editorReducer, INITIAL_STATE);
+export default function ProposalEditor({ images = [], onSave }) {
+  const initialLayers = [
+    { id: "l1", type: "text", content: "Will You Marry Me?", x: 50, y: 30, fontSize: 48, color: "#fff", font: "serif", filter: null },
+    { id: "l2", type: "shape", shape: "heart", x: 40, y: 55, size: 80, color: "#ff6b9d" },
+    { id: "l3", type: "text", content: "You are my everything ❤️", x: 20, y: 75, fontSize: 20, color: "#ffecd2", font: "script" },
+    ...images.map((url, i) => ({
+      id: `img-${i}`, 
+      type: "image", 
+      src: url, 
+      x: 35 + (i * 8) % 30, 
+      y: 40 + (i * 12) % 35, 
+      width: 140, 
+      height: 90
+    }))
+  ];
+
+  const CUSTOM_INITIAL_STATE = {
+    ...INITIAL_STATE,
+    layers: initialLayers
+  };
+
+  const [state, dispatch] = useReducer(editorReducer, CUSTOM_INITIAL_STATE);
   const [saveStatus, setSaveStatus] = useState("saved");
   const [rightTab, setRightTab] = useState("layers");
   const saveTimerRef = useRef(null);
   const playTimerRef = useRef(null);
 
-  // Auto-save debouncing
-  useEffect(() => {
-    setSaveStatus("unsaved");
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      setSaveStatus("saving...");
-      setTimeout(() => setSaveStatus("saved ✓"), 600);
-    }, 2000);
-    return () => clearTimeout(saveTimerRef.current);
-  }, [state.layers, state.activeFilter]);
+    // Auto-save debouncing
+    useEffect(() => {
+      setSaveStatus("unsaved");
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        setSaveStatus("saving...");
+        if (onSave) {
+          onSave(state);
+        }
+        setTimeout(() => setSaveStatus("saved ✓"), 600);
+      }, 2000);
+      return () => clearTimeout(saveTimerRef.current);
+    }, [state.layers, state.activeFilter, onSave]);
 
   // Playback
   useEffect(() => {

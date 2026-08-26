@@ -27,9 +27,25 @@ export function sanitizeEmail(email: unknown): string | null {
 }
 
 /**
- * Parses a value as a number and clamps it between min and max.
- * Returns min if parsing fails.
+ * Validates and sanitizes a phone number.
+ * Accepts Indian 10-digit numbers with optional +91 prefix.
+ * Returns cleaned digits-only string or null if invalid.
+ *
+ * Issue #22 fix: backend-side phone validation
  */
+export function sanitizePhone(phone: unknown): string | null {
+  if (typeof phone !== 'string') return null;
+  const digits = phone.replace(/\D/g, '');
+  // Strip leading 91 prefix if present (keep last 10 digits)
+  const normalized = digits.length === 12 && digits.startsWith('91')
+    ? digits.slice(2)
+    : digits.length === 13 && digits.startsWith('091')
+    ? digits.slice(3)
+    : digits;
+  // Must be exactly 10 digits starting with 6-9 (Indian mobile)
+  if (!/^[6-9]\d{9}$/.test(normalized)) return null;
+  return normalized;
+}
 export function sanitizeNumber(val: unknown, min: number, max: number): number {
   const parsed = typeof val === 'number' ? val : parseFloat(String(val));
   if (isNaN(parsed)) return min;

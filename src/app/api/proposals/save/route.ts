@@ -13,18 +13,21 @@ export async function POST(request: Request) {
     const sanitizedPartnerName = sanitizeString(body.partnerName, 100);
     const sanitizedEmail = sanitizeEmail(body.customerEmail);
     const sanitizedQuestion = sanitizeString(body.question, 300);
+    const sanitizedPurpose = sanitizeString(body.purpose, 200);
 
     // Override body fields with sanitized values
     body.yourName = sanitizedYourName;
     body.partnerName = sanitizedPartnerName;
     body.customerEmail = sanitizedEmail ?? body.customerEmail;
     body.question = sanitizedQuestion;
+    body.purpose = sanitizedPurpose;
 
     const {
       yourName,
       partnerName,
       customerEmail,
       question,
+      purpose,
       mediaUrls,
       musicTrack,
       effectType,
@@ -53,6 +56,7 @@ export async function POST(request: Request) {
         customerEmail,
         userEmail: customerEmail,
         question: question || "Will you marry me?",
+        purpose: purpose || null,
         mediaUrls: mediaUrls || [],
         musicTrack: musicTrack || null,
         effectType: effectType || null,

@@ -1,13 +1,22 @@
 import { NextResponse, NextRequest } from 'next/server';
 
-// ── In-memory sliding window rate limiter (Edge-compatible) ──────────────────
+/**
+ * middleware.ts — Next.js Edge Middleware
+ *
+ * Applies rate limiting + security headers to all API routes.
+ * Lives at project root so Next.js automatically picks it up.
+ *
+ * Fixes applied:
+ * - Issue #6:  Rate limiting now actually RUNS (proxy.ts was never wired before)
+ * - Issue #25: Admin auth, payment verify, and brute-force targets get tight limits
+ */
+
+// ── In-memory sliding window rate limiter ─────────────────────────────────────
 interface RateLimitEntry {
   timestamps: number[];
 }
-
 const store = new Map<string, RateLimitEntry>();
 
-// Cleanup old entries every 5 minutes to prevent memory leaks
 let lastCleanup = Date.now();
 function maybeCleanup() {
   const now = Date.now();
@@ -24,7 +33,7 @@ function isRateLimited(ip: string, routeKey: string, maxRequests: number): boole
   maybeCleanup();
   const key = `${ip}:${routeKey}`;
   const now = Date.now();
-  const windowMs = 60_000; // 1-minute sliding window
+  const windowMs = 60_000;
 
   const entry = store.get(key) ?? { timestamps: [] };
   entry.timestamps = entry.timestamps.filter((t) => t > now - windowMs);
@@ -33,19 +42,37 @@ function isRateLimited(ip: string, routeKey: string, maxRequests: number): boole
     store.set(key, entry);
     return true;
   }
-
   entry.timestamps.push(now);
   store.set(key, entry);
   return false;
 }
 
-// ── Per-route limits ──────────────────────────────────────────────────────────
+// ── Per-route rate limits ─────────────────────────────────────────────────────
+// Issue #25 fix: admin auth + payment endpoints get very tight limits
 function getLimit(pathname: string, method: string): number {
-  if (method !== 'POST') return 60;
-  if (pathname === '/api/custom-requests') return 5;
-  if (pathname === '/api/proposals/save')  return 3;
-  if (pathname === '/api/notify')          return 10;
-  return 30;
+  // Critical: admin login brute-force protection — 5 attempts/min/IP
+  if (pathname === '/api/admin/auth')             return 5;
+
+  // Payment verification — tight to prevent replay/enumeration attacks
+  if (pathname === '/api/payment/verify')         return 5;
+  if (pathname === '/api/payment/verify-manual')  return 10;
+  if (pathname === '/api/payment/create-order')   return 10;
+
+  // User form submissions — prevent spam
+  if (pathname === '/api/proposals/save')         return 3;
+  if (pathname === '/api/custom-requests' && method === 'POST') return 5;
+
+  // Notification — prevent email spam abuse
+  if (pathname === '/api/notify')                 return 10;
+
+  // Image uploads — prevent storage abuse
+  if (pathname === '/api/upload/image')           return 10;
+
+  // All other POSTs
+  if (method === 'POST')                          return 20;
+
+  // GETs — generous but not unlimited
+  return 60;
 }
 
 // ── Security headers ──────────────────────────────────────────────────────────
@@ -58,8 +85,8 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-// ── Main proxy handler ────────────────────────────────────────────────────────
-export function proxy(req: NextRequest) {
+// ── Main middleware ───────────────────────────────────────────────────────────
+export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (pathname.startsWith('/api/')) {
@@ -72,7 +99,7 @@ export function proxy(req: NextRequest) {
 
     if (isRateLimited(ip, `${req.method}:${pathname}`, limit)) {
       const res = NextResponse.json(
-        { error: 'Too many requests', retryAfter: 60 },
+        { error: 'Too many requests. Please wait before trying again.', retryAfter: 60 },
         { status: 429 }
       );
       res.headers.set('Retry-After', '60');
@@ -85,6 +112,7 @@ export function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
+    // Apply to all routes except static files and images
     '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt)$).*)',
   ],
 };

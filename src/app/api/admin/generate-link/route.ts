@@ -1,26 +1,17 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateSecureToken } from "@/lib/encryption";
-
-function verifyAdminAuth(req: NextRequest): boolean {
-  const adminUsername = process.env.ADMIN_USERNAME;
-  const token = req.headers.get("x-admin-token");
-  if (token && adminUsername) {
-    try {
-      const decoded = Buffer.from(token, "base64").toString("utf-8");
-      if (decoded.startsWith(adminUsername)) return true;
-    } catch { /* invalid base64 */ }
-  }
-  return false;
-}
+import { isAdminRequest } from "@/lib/adminAuth";
 
 /**
  * POST /api/admin/generate-link
- * Admin manually generates a pre-paid live link (for cash/UPI offline payments).
+ *
+ * Fixes applied:
+ * - Issue #1 / #9: Uses isAdminRequest() — signed HMAC token verification
  */
 export async function POST(req: NextRequest) {
   try {
-    if (!verifyAdminAuth(req)) {
+    if (!isAdminRequest(req)) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
@@ -33,11 +24,18 @@ export async function POST(req: NextRequest) {
       maxViews = 2,
       paymentAmount = 99,
       planType = "premium",
-    } = body;
+    } = body ?? {};
 
     if (!yourName || !partnerName || !customerEmail) {
       return NextResponse.json(
         { success: false, error: "yourName, partnerName, customerEmail are required" },
+        { status: 400 }
+      );
+    }
+
+    if (typeof maxViews !== "number" || maxViews < 1 || maxViews > 10) {
+      return NextResponse.json(
+        { success: false, error: "maxViews must be a number between 1 and 10" },
         { status: 400 }
       );
     }
@@ -85,7 +83,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[admin/generate-link] Error:", message);
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    console.error("[admin/generate-link]", message);
+    return NextResponse.json({ success: false, error: "Failed to generate link" }, { status: 500 });
   }
 }

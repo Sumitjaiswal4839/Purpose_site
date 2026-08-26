@@ -20,6 +20,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/jpg"];
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { success: false, error: "File too large. Max size is 10MB." },
+        { status: 413 }
+      );
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid file type. Only JPG, PNG, WEBP, GIF allowed." },
+        { status: 415 }
+      );
+    }
+
     // Validate that Cloudinary is configured
     if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
       console.warn('Cloudinary not configured - returning base64 fallback');

@@ -66,7 +66,7 @@ export default function SubmitIdeaPage() {
     <div className="min-h-screen bg-[#FAFAFA] page-fade-in">
       <AnimatePresence>{toast && <Toast message={toast.message} type={toast.type} />}</AnimatePresence>
 
-      <div className="max-w-2xl mx-auto px-6 pt-28 pb-20">
+      <div className="max-w-xl mx-auto px-6 pt-28 pb-20">
 
         <Link
           href="/"
@@ -83,7 +83,7 @@ export default function SubmitIdeaPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96 }}
-              className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-indigo-100/30 border border-indigo-100/60 relative overflow-hidden"
+              className="bg-white rounded-2xl p-6 md:p-8 shadow-lg shadow-indigo-100/30 border border-indigo-100/60 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-56 h-56 bg-indigo-50 rounded-full blur-[80px] -mr-28 -mt-28 pointer-events-none" />
 

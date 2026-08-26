@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { 
   Heart, Sparkles, Smile, MessageCircleHeart, 
-  MapPin, Mail, Play, ArrowRight, Lock, CalendarHeart, Cake, Coffee, Search, Menu, X, Star
+  MapPin, Mail, Play, ArrowRight, Lock, CalendarHeart, Cake, Coffee, Search, Menu, X, Star, ChevronLeft, ChevronRight
 } from "lucide-react";
 
 export default function TemplatesPage() {
@@ -23,6 +23,7 @@ export default function TemplatesPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [priceFilter, setPriceFilter] = useState("all");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const themes = [
     {
@@ -327,8 +328,10 @@ export default function TemplatesPage() {
   ];
 
   const filteredThemes = themes.filter(t => {
+    // Issue #20 fix: removed non-existent aliases 'proposals', 'anniversaries', 'dates'
+    // Templates only use: "love", "family", "friends", "fun", "sorry"
     const categoryMatch = activeCategory === 'love'
-      ? ['love', 'proposals', 'anniversaries', 'dates'].includes(t.category)
+      ? t.category === 'love'
       : t.category === activeCategory;
     const searchMatch = !searchQuery || t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.description.toLowerCase().includes(searchQuery.toLowerCase());
     const priceMatch = priceFilter === 'all' || (priceFilter === 'free' && t.price === 0) || (priceFilter === 'paid' && t.price > 0);
@@ -376,7 +379,17 @@ export default function TemplatesPage() {
         )}
       </AnimatePresence>
 
-      <aside className="w-full md:w-72 bg-white border-r border-gray-200 min-h-screen md:h-[calc(100vh-80px)] md:sticky md:top-20 z-10 hidden sm:flex flex-col">
+      <aside className={`bg-white border-r border-gray-200 min-h-screen md:h-[calc(100vh-80px)] md:sticky md:top-20 z-10 hidden sm:flex flex-col transition-all duration-300 relative ${sidebarOpen ? 'w-72 opacity-100' : 'w-0 opacity-0 overflow-hidden border-r-0'}`}>
+        {/* Toggle Close Button */}
+        {sidebarOpen && (
+          <button 
+            onClick={() => setSidebarOpen(false)}
+            className="absolute top-4 right-4 p-1.5 hover:bg-gray-100 text-gray-400 hover:text-gray-600 rounded-lg transition-all"
+            title="Collapse Sidebar"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+        )}
         <div className="p-6">
            <div className="relative mb-8">
              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -468,16 +481,28 @@ export default function TemplatesPage() {
       <main className="flex-1 p-6 md:p-10 pb-32 bg-[#FAFAFA]">
         <div className="max-w-6xl mx-auto">
           
-          <div className="mb-10">
-            <motion.h1 
-              key={activeCategory}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-3xl md:text-5xl font-bold text-gray-900 mb-3"
-            >
-              {occasions.find(o => o.id === activeCategory)?.name || "Templates"}
-            </motion.h1>
-            <p className="text-gray-500">Pick a cinematic experience and customize it perfectly.</p>
+          <div className="mb-10 flex items-center justify-between">
+            <div>
+              <motion.h1 
+                key={activeCategory}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-3xl md:text-5xl font-bold text-gray-900 mb-3"
+              >
+                {occasions.find(o => o.id === activeCategory)?.name || "Templates"}
+              </motion.h1>
+              <p className="text-gray-500">Pick a cinematic experience and customize it perfectly.</p>
+            </div>
+            
+            {!sidebarOpen && (
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="hidden sm:flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm transition-all active:scale-95"
+              >
+                <ChevronRight className="w-5 h-5" />
+                <span>Show Filters</span>
+              </button>
+            )}
           </div>
 
           {filteredThemes.length > 0 ? (
@@ -549,18 +574,19 @@ export default function TemplatesPage() {
                           </div>
                           <span className="text-[10px] text-gray-400 font-bold">Used {theme.usedCount.toLocaleString()}+ times</span>
                        </div>
-                       <div className="pt-5 border-t border-gray-100 flex items-center justify-between">
-                          {theme.price === 0 ? (
-                            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">Free Tier</span>
-                          ) : (
-                            <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-100 px-3 py-1 rounded-full">₹{theme.price} Lite</span>
-                          )}
+                       <div className="pt-5 border-t border-gray-100 flex items-center justify-between gap-2">
+                          <Link 
+                            href={theme.href || "/preview"}
+                            className="text-gray-500 font-medium text-xs hover:text-gray-900 transition-colors"
+                          >
+                            Preview
+                          </Link>
                           
                           <Link 
-                            href={theme.href || "/editor"}
-                            className="text-gray-900 font-bold text-sm flex items-center gap-1 hover:text-pink-600 transition-colors"
+                            href={`/create?template=${theme.href ? theme.href.split('/').pop() : ''}`}
+                            className="bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs px-4 py-2 rounded-full flex items-center gap-1 shadow-sm transition-all hover:scale-105 active:scale-95"
                           >
-                            Preview  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            Customize <ArrowRight className="w-3 h-3" />
                           </Link>
                        </div>
                     </div>

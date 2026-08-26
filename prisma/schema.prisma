@@ -22,6 +22,7 @@ model SecretLink {
   yourName            String
   customerEmail       String
   question            String    @default("Will you marry me?")
+  purpose             String?
   
   // Template & Media
   templateType        String    @default("default")

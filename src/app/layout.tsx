@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 const inter = { variable: "--font-geist-sans" };
 const robotoMono = { variable: "--font-geist-mono" };
@@ -13,6 +14,12 @@ export const metadata: Metadata = {
   description:
     "Transform your special moment into a cinematic experience. Create time-limited, password-protected proposal links with music, VFX, and beautiful memories.",
   keywords: ["proposal", "romantic", "engagement", "love", "secret link", "cinematic proposal"],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Purpose",
+  },
   openGraph: {
     title: "Purpose | Your Love Story, Cinematized",
     description: "Create a private, interactive proposal experience that lasts a lifetime.",
@@ -30,6 +37,10 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport = {
+  themeColor: "#ff2b6d",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,7 +52,7 @@ export default function RootLayout({
       className={`${inter.variable} ${robotoMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col text-gray-900 bg-gray-50">
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

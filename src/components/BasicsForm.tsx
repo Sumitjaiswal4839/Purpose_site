@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { User, Heart, Mail, MapPin, AlertCircle } from "lucide-react";
+import { User, Heart, Mail, Sparkles, AlertCircle } from "lucide-react";
 
 interface BasicsFormProps {
   formData: {
     yourName: string;
     partnerName: string;
     customerEmail: string;
-    location: string;
+    purpose: string;
   };
   updateFormData: (data: any) => void;
   onNext: () => void;
@@ -23,7 +23,7 @@ const BasicsForm: React.FC<BasicsFormProps> = ({ formData, updateFormData, onNex
     if (!data.partnerName.trim()) e.partnerName = "Partner ka naam batao 💕";
     else if (data.partnerName.trim().length < 2) e.partnerName = "Naam thoda lamba chahiye";
     if (!data.customerEmail.trim()) e.customerEmail = "Email required hai — link yahin aayega";
-    else if (!/\S+@\S+\.\S+/.test(data.customerEmail)) e.customerEmail = "Valid email dalo";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(data.customerEmail.trim())) e.customerEmail = "Valid email dalo";
     return e;
   };
 
@@ -72,10 +72,10 @@ const BasicsForm: React.FC<BasicsFormProps> = ({ formData, updateFormData, onNex
       type: "email",
     },
     {
-      name: "location",
-      label: "Your City (Optional)",
-      placeholder: "e.g. Delhi, Mumbai...",
-      icon: <MapPin className="w-5 h-5" />,
+      name: "purpose",
+      label: "Purpose (Optional)",
+      placeholder: "e.g. Marriage proposal, Birthday wish...",
+      icon: <Sparkles className="w-5 h-5" />,
       type: "text",
     },
   ];

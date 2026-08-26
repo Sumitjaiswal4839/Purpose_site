@@ -1,5 +1,37 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# ============================================================
+# 🔴 SENSITIVE — NEVER COMMIT THESE
+# ============================================================
+
+# Environment files — contain secrets, API keys, passwords
+.env
+.env.*
+!.env.example
+
+# SQLite database — contains real user data (names, emails, phone numbers, proposals)
+*.db
+*.sqlite
+*.sqlite3
+database/
+database/purpose.db
+
+# User-submitted data files — contain real PII (names, phone numbers)
+data/custom-requests.json
+data/*.json
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.cert
+*.crt
+
+# ============================================================
+# 🟠 BUILD / GENERATED — No need to commit
+# ============================================================
+
 # dependencies
 /node_modules
 /.pnp
@@ -10,34 +42,45 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# Next.js build output
 /.next/
 /out/
-
-# production
 /build
 
-# misc
-.DS_Store
-*.pem
+# Prisma generated client
+/src/generated/
+/src/generated/prisma
 
-# debug
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
+# ============================================================
+# 🟡 LOGS — Debug artifacts, not needed in repo
+# ============================================================
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+error_log.txt
+*.log
 
-# env files (can opt-in for committing if needed)
-.env*
+# ============================================================
+# 🔵 OS / EDITOR — Local machine artifacts
+# ============================================================
 
-# vercel
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.vscode/launch.json
+
+# ============================================================
+# ⚠️  DEPLOYMENT
+# ============================================================
+
+# Vercel
 .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-/src/generated/prisma
+# Coverage reports
+/coverage

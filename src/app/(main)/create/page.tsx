@@ -18,7 +18,7 @@ import BasicsForm from "@/components/BasicsForm";
 import EditorPanel from "@/components/Editor/Panels/EditorPanel";
 import StylingPanel from "@/components/Editor/StylingPanel";
 
-export default function CreatePage() {
+function CreatePageContent() {
   const [step, setStep] = useState(1);
   const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -33,6 +33,7 @@ export default function CreatePage() {
     yourName: "",
     customerEmail: "",
     location: "",
+    purpose: "",
     question: "Will you marry me?",
   });
 
@@ -111,11 +112,10 @@ export default function CreatePage() {
     fetchGifs();
   }, []);
 
-  useEffect(() => {
-    const urls = files.map(file => URL.createObjectURL(file));
-    // Combine with uploaded urls if they exist
-    return () => urls.forEach(url => URL.revokeObjectURL(url));
-  }, [files]);
+  // Issue #16 fix: this useEffect created object URLs but never used them
+  // (previewUrls is populated only via the upload API response, not blob URLs).
+  // The old code created URLs and revoked them immediately — dead and misleading.
+  // Removed entirely. No blob URLs are stored in state, so no cleanup needed here.
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -188,7 +188,7 @@ export default function CreatePage() {
           <button 
             onClick={() => {
               localStorage.removeItem('proposalFormData');
-              setFormData({ partnerName: "", yourName: "", customerEmail: "", location: "", question: "Will you marry me?" });
+              setFormData({ partnerName: "", yourName: "", customerEmail: "", location: "", purpose: "", question: "Will you marry me?" });
               setPreviewUrls([]);
               setFiles([]);
               setStep(1);
@@ -578,5 +578,18 @@ export default function CreatePage() {
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
       `}</style>
     </div>
+  );
+}
+
+export default function CreatePage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center gap-3 text-rose-500 font-bold uppercase tracking-widest text-xs">
+        <div className="w-6 h-6 border-2 border-rose-200 border-t-rose-600 rounded-full animate-spin" />
+        Loading Creator Canvas...
+      </div>
+    }>
+      <CreatePageContent />
+    </React.Suspense>
   );
 }

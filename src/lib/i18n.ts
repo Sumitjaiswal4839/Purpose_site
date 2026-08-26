@@ -1,0 +1,48 @@
+export type Locale = "en" | "hi";
+
+export const translations = {
+  en: {
+    nav_home: "Home",
+    nav_templates: "Templates",
+    nav_ideas: "Ideas",
+    nav_custom: "Custom Order",
+    nav_admin: "Admin",
+    cta_create: "Create Now",
+    hero_title: "Turn Your Feelings Into a Cinematic Moment",
+    hero_subtitle: "Create a private, interactive proposal experience that lasts a lifetime.",
+    step_basics: "Basics",
+    step_timeline: "Timeline",
+    step_editor: "Editor",
+    step_styling: "Styling",
+    step_export: "Export",
+    btn_next: "Next Step",
+    btn_back: "Go Back",
+    field_your_name: "Your Name",
+    field_partner_name: "Partner's Name",
+    field_email: "Your Email",
+    footer_tagline: "Pyaar karo, propose karo ❤️",
+  },
+  hi: {
+    nav_home: "होम",
+    nav_templates: "टेम्पलेट्स",
+    nav_ideas: "आइडियाज़",
+    nav_custom: "कस्टम ऑर्डर",
+    nav_admin: "एडमिन",
+    cta_create: "अभी बनाएं",
+    hero_title: "अपनी भावनाओं को एक सिनेमाई पल में बदलें",
+    hero_subtitle: "एक प्राइवेट, इंटरैक्टिव प्रपोज़ल एक्सपीरियंस बनाएं जो हमेशा याद रहे।",
+    step_basics: "बेसिक्स",
+    step_timeline: "टाइमलाइन",
+    step_editor: "एडिटर",
+    step_styling: "स्टाइलिंग",
+    step_export: "एक्सपोर्ट",
+    btn_next: "अगला कदम",
+    btn_back: "वापस जाएं",
+    field_your_name: "आपका नाम",
+    field_partner_name: "पार्टनर का नाम",
+    field_email: "आपका ईमेल",
+    footer_tagline: "प्यार करो, प्रपोज़ करो ❤️",
+  },
+} as const;
+
+export type TranslationKey = keyof typeof translations["en"];

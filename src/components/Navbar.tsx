@@ -1,60 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Sparkles, LayoutDashboard, Settings, Heart, Lock, Lightbulb, Mail, Wand2 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import LanguageToggle from "@/components/LanguageToggle";
 
 export default function Navbar() {
   const [isHidden, setIsHidden] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { t } = useLanguage();
 
-  // Secret modal states
-  const [showSecretModal, setShowSecretModal] = useState(false);
-  const [secretKey, setSecretKey] = useState("");
-  const [errorMsg, setErrorMsg] = useState(false);
-
-  const { scrollY } = useScroll();
+  const scrollY = useScroll().scrollY;
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setIsAdmin(localStorage.getItem("adminAuth") === "true");
+      setIsAdmin(!!localStorage.getItem("adminToken"));
     }
-  }, []);
-
-  // Keyboard listener for 3x Spacebar
-  useEffect(() => {
-    let spaceCount = 0;
-    let lastSpaceTime = 0;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.code === "Space") {
-        const now = Date.now();
-        if (now - lastSpaceTime < 500) {
-          spaceCount++;
-        } else {
-          spaceCount = 1;
-        }
-        lastSpaceTime = now;
-        if (spaceCount === 3) {
-          e.preventDefault();
-          if (!isAdmin) {
-            setShowSecretModal(true);
-            setSecretKey("");
-            setErrorMsg(false);
-          } else {
-            router.push("/admin");
-          }
-          spaceCount = 0;
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isAdmin, router]);
+  }, [pathname]);
 
   // Hide navbar on scroll down
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -66,80 +33,18 @@ export default function Navbar() {
     }
   });
 
-  const handleSecretSubmit = () => {
-    if (secretKey.toLowerCase() === "loveyou") {
-      localStorage.setItem("adminAuth", "true");
-      setIsAdmin(true);
-      setShowSecretModal(false);
-      router.push("/admin");
-    } else {
-      setErrorMsg(true);
-      setSecretKey("");
-    }
-  };
-
   if (pathname === "/preview") return null;
 
   const navLinks = [
-    { name: "Home", path: "/", icon: <Home className="w-4 h-4" /> },
-    { name: "Templates", path: "/templates", icon: <LayoutDashboard className="w-4 h-4" /> },
-    { name: "Ideas", path: "/ideas", icon: <Lightbulb className="w-4 h-4" /> },
-    { name: "Custom Order", path: "/custom-request", icon: <Mail className="w-4 h-4" /> },
-    ...(isAdmin ? [{ name: "Admin", path: "/admin", icon: <Settings className="w-4 h-4" /> }] : []),
+    { name: t("nav_home"), path: "/", icon: <Home className="w-4 h-4" /> },
+    { name: t("nav_templates"), path: "/templates", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { name: t("nav_ideas"), path: "/ideas", icon: <Lightbulb className="w-4 h-4" /> },
+    { name: t("nav_custom"), path: "/custom-request", icon: <Mail className="w-4 h-4" /> },
+    ...(isAdmin ? [{ name: t("nav_admin"), path: "/admin", icon: <Settings className="w-4 h-4" /> }] : []),
   ];
 
   return (
     <>
-      {/* ── Secret Admin Modal ─────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {showSecretModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md"
-            onClick={() => setShowSecretModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-pink-100 relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-rose-500" />
-              <h3 className="text-xl font-bold mb-2 text-gray-800 flex items-center gap-3">
-                <Lock className="w-5 h-5 text-rose-500" /> Root Access
-              </h3>
-              <p className="text-gray-400 text-sm mb-5">Enter root passkey to access admin.</p>
-              <input
-                type="password"
-                autoFocus
-                placeholder="Enter secret key..."
-                value={secretKey}
-                onChange={(e) => { setSecretKey(e.target.value); setErrorMsg(false); }}
-                onKeyDown={(e) => { if (e.key === "Enter") handleSecretSubmit(); }}
-                className={`w-full bg-gray-50 border ${errorMsg ? "border-red-400 focus:ring-red-500" : "border-gray-200 focus:ring-pink-500"} rounded-xl px-4 py-3 mb-1 focus:outline-none focus:ring-2 transition-all text-sm`}
-              />
-              <div className="h-5 mb-4">
-                {errorMsg && <p className="text-red-500 text-xs font-medium">Access Denied. Invalid key.</p>}
-              </div>
-              <div className="flex justify-end gap-3">
-                <button onClick={() => setShowSecretModal(false)} className="px-4 py-2 text-gray-400 hover:text-gray-900 font-medium transition-colors text-sm">
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSecretSubmit}
-                  className="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-black transition-colors text-sm active:scale-95"
-                >
-                  Authenticate
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* ── DESKTOP FLOATING NAVBAR ───────────────────────────────────────── */}
       <motion.nav
         variants={{
@@ -193,14 +98,17 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* CTA Button */}
-          <Link
-            href="/create"
-            className="ml-2 flex items-center gap-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold text-sm shadow-md shadow-rose-300/40 hover:shadow-rose-400/50 hover:scale-105 active:scale-95 transition-all duration-200"
-          >
-            <Wand2 className="w-3.5 h-3.5" />
-            Create Now
-          </Link>
+          {/* Language Toggle & CTA Button */}
+          <div className="ml-2 flex items-center gap-2">
+            <LanguageToggle />
+            <Link
+              href="/create"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold text-sm shadow-md shadow-rose-300/40 hover:shadow-rose-400/50 hover:scale-105 active:scale-95 transition-all duration-200"
+            >
+              <Wand2 className="w-3.5 h-3.5" />
+              {t("cta_create")}
+            </Link>
+          </div>
         </div>
       </motion.nav>
 

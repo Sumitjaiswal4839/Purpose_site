@@ -125,9 +125,14 @@ export default function CrushTheme() {
         )}
       </motion.div>
 
-      <Link href="/create" className="absolute top-6 left-6 text-rose-400 hover:text-rose-600 transition-colors text-sm font-medium z-50 flex items-center gap-2">
-        ← Exit Preview
-      </Link>
+      <div className="absolute top-6 left-6 right-6 z-50 flex justify-between items-center">
+        <Link href="/templates" className="text-rose-500 hover:text-rose-700 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full transition-all text-xs font-bold flex items-center gap-2 border border-rose-100 shadow-sm">
+          ← Back to Templates
+        </Link>
+        <Link href="/create?template=crush" className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-xs px-6 py-2.5 rounded-full shadow-md transition-all hover:scale-105 active:scale-95 flex items-center gap-1">
+          Customize & Edit This Theme ✍️
+        </Link>
+      </div>
     </div>
   );
 }

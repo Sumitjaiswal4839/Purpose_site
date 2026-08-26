@@ -38,17 +38,45 @@ export default function CustomRequestPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  // Issue #22 fix: track phone validation error separately
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
   };
 
+  // Issue #22 fix: validate Indian mobile number format
+  const validatePhone = (phone: string): string | null => {
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length === 0) return "WhatsApp number required hai";
+    if (digits.length < 10) return "Number too short — min 10 digits";
+    if (digits.length > 13) return "Number too long";
+    // Accept: 10-digit Indian, or with +91 prefix (12 digits), or 91 prefix (12 digits)
+    const valid = /^(\+?91)?[6-9]\d{9}$/.test(digits.replace(/^\+/, ""));
+    if (!valid) return "Valid Indian mobile number enter karein (starts with 6-9)";
+    return null;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setFormData({ ...formData, phone: value });
+    if (value.trim()) setPhoneError(validatePhone(value));
+    else setPhoneError(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Issue #22 fix: validate phone before submit
+    const phoneErr = validatePhone(formData.phone);
+    if (phoneErr) {
+      setPhoneError(phoneErr);
+      showToast(phoneErr, "error");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
-    
+
     try {
       const res = await fetch("/api/custom-requests", {
         method: "POST",
@@ -189,15 +217,26 @@ export default function CustomRequestPage() {
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors">
                         <Phone className="w-5 h-5" />
                       </span>
-                      <input 
-                        required 
-                        type="tel" 
-                        placeholder="+91 xxxxx xxxxx" 
+                      {/* Issue #22 fix: phone validation with Indian format check */}
+                      <input
+                        required
+                        type="tel"
+                        placeholder="+91 98765 43210"
                         value={formData.phone}
-                        className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400 transition-all text-gray-800"
-                        onChange={e => setFormData({...formData, phone: e.target.value})}
+                        maxLength={15}
+                        className={`w-full bg-slate-50/50 border rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:ring-1 transition-all text-gray-800 ${
+                          phoneError
+                            ? "border-red-400 focus:border-red-400 focus:ring-red-400"
+                            : "border-slate-200 focus:border-rose-400 focus:ring-rose-400"
+                        }`}
+                        onChange={e => handlePhoneChange(e.target.value)}
                       />
                     </div>
+                    {phoneError && (
+                      <p className="text-red-500 text-xs font-medium flex items-center gap-1 mt-1">
+                        <AlertCircle className="w-3 h-3" /> {phoneError}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700">For whom is this?</label>

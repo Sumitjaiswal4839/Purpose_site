@@ -1,57 +1,40 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isAdminRequest } from "@/lib/adminAuth";
 
-// Helper function to verify admin credentials
-function verifyAdminAuth(req: NextRequest): boolean {
-  const adminUsername = process.env.ADMIN_USERNAME;
-  
-  // Check for admin token or authorization header
-  const token = req.headers.get("x-admin-token");
-  const authHeader = req.headers.get("authorization");
-  
-  if (token && adminUsername) {
-    const decoded = Buffer.from(token, "base64").toString("utf-8");
-    if (decoded.startsWith(adminUsername)) {
-      return true;
-    }
-  }
-
-  // Fallback: check basic auth header
-  if (authHeader && authHeader.startsWith("Bearer ") && adminUsername) {
-    return authHeader.includes(adminUsername);
-  }
-
-  return false;
-}
-
+/**
+ * GET /api/admin/links
+ *
+ * Fixes applied:
+ * - Issue #1 / #9: Uses isAdminRequest() — signed HMAC token verification
+ * - Issue #9: No longer skips auth when ADMIN_USERNAME is unset (isAdminRequest handles that)
+ */
 export async function GET(req: NextRequest) {
   try {
-    // Verify admin authentication
-    if (!verifyAdminAuth(req)) {
+    if (!isAdminRequest(req)) {
       return NextResponse.json(
-        { success: false, error: "Unauthorized access" },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    // Fetch all secret links from Postgres using Prisma
-    // Include accessLog count for the dashboard
     const links = await prisma.secretLink.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         _count: {
-          select: { accessLog: true }
-        }
-      }
+          select: { accessLog: true },
+        },
+      },
     });
-    
+
     return NextResponse.json({ success: true, links });
-  } catch (error: any) {
-    console.error("Failed to fetch links from Prisma:", error);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[admin/links GET]", message);
+    // Issue #30: Don't expose raw Prisma error details to client
     return NextResponse.json(
       { success: false, error: "Failed to fetch data from database" },
       { status: 500 }
     );
   }
 }
-

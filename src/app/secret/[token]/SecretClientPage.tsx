@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import {
   HeartCrack, Volume2, VolumeX, Heart, Sparkles,
   ChevronDown, Clock, ShieldAlert,
@@ -9,34 +10,109 @@ import {
 import Link from "next/link";
 import confetti from "canvas-confetti";
 
+interface ProposalData {
+  partnerName: string;
+  yourName: string;
+  question: string;
+  mediaUrls?: string[];
+  musicTrack: string;
+  fontStyle?: string;
+  filterType?: string;
+  effectType?: string;
+  customerEmail: string;
+  currentViews: number;
+  maxViews: number;
+  expiresAt: string;
+}
+
+// Move YesNoButtons OUTSIDE component
+function YesNoButtons({
+  accepted,
+  noCount,
+  noOffset,
+  handleYes,
+  handleNoHover,
+  noLabel,
+}: {
+  accepted: boolean;
+  noCount: number;
+  noOffset: { x: number; y: number };
+  handleYes: () => void;
+  handleNoHover: () => void;
+  noLabel: string;
+}) {
+  return accepted ? (
+    <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="text-center">
+      <p className="text-4xl md:text-6xl font-black text-emerald-400 mb-4">IT&apos;S A YES! 💍💖</p>
+      <p className="text-rose-200/70 text-xl italic mt-4">&quot;Pyaar karo, propose karo.&quot;</p>
+    </motion.div>
+  ) : (
+    <div className="flex flex-wrap gap-5 justify-center items-center min-h-[100px] relative mt-6">
+      <button
+        onClick={handleYes}
+        style={{ transform: `scale(${1 + noCount * 0.12})` }}
+        className="bg-emerald-500 text-white px-14 py-5 rounded-full font-black text-2xl shadow-[0_20px_60px_rgba(16,185,129,0.4)] hover:scale-110 active:scale-95 transition-all z-40"
+      >
+        YES! 💍
+      </button>
+      <motion.button
+        animate={{ x: noOffset.x, y: noOffset.y }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        onMouseEnter={handleNoHover}
+        onTouchStart={handleNoHover}
+        onClick={noCount >= 5 ? handleYes : handleNoHover}
+        className="bg-white/10 backdrop-blur-xl border border-white/20 text-white px-14 py-5 rounded-full font-black text-2xl hover:bg-white/20 transition-all cursor-pointer z-50"
+      >
+        {noLabel}
+      </motion.button>
+    </div>
+  );
+}
+
 export default function SecretClientPage({
   proposalData: initialData,
   token,
 }: {
-  proposalData: any;
+  proposalData: ProposalData | null;
   token: string;
 }) {
   const [loading, setLoading]         = useState(!initialData);
   const [allowed, setAllowed]         = useState(!!initialData);
   const [reason, setReason]           = useState("");
-  const [proposalData, setProposalData] = useState<any>(initialData);
+  const [proposalData, setProposalData] = useState<ProposalData | null>(initialData);
   const [isMuted, setIsMuted]         = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [timeLeft, setTimeLeft]       = useState("");
   const [accepted, setAccepted]       = useState(false);
   const [noCount, setNoCount]         = useState(0);
   const [noOffset, setNoOffset]       = useState({ x: 0, y: 0 });
+  const [timelineRevealed, setTimelineRevealed] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Disable right-click + verify token on mount
-  useEffect(() => {
-    const prevent = (e: MouseEvent) => e.preventDefault();
-    document.addEventListener("contextmenu", prevent);
-    verifyToken();
-    return () => document.removeEventListener("contextmenu", prevent);
-  }, [token]);
+  // Issue #23 fix: store the interval ref so it can be cleared on unmount
+  const expiryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const verifyToken = async () => {
+  const startExpiryTimer = useCallback((expiryDate: string) => {
+    // Clear any previous interval before creating a new one
+    if (expiryTimerRef.current) clearInterval(expiryTimerRef.current);
+
+    expiryTimerRef.current = setInterval(() => {
+      const distance = new Date(expiryDate).getTime() - Date.now();
+      if (distance < 0) {
+        if (expiryTimerRef.current) clearInterval(expiryTimerRef.current);
+        setTimeLeft("EXPIRED");
+        setAllowed(false);
+        setReason("expired");
+      } else {
+        const d = Math.floor(distance / 86400000);
+        const h = Math.floor((distance % 86400000) / 3600000);
+        const m = Math.floor((distance % 3600000) / 60000);
+        setTimeLeft(`${d}d ${h}h ${m}m`);
+      }
+    }, 1000);
+  }, []);
+
+  const verifyToken = useCallback(async () => {
     try {
       const res = await fetch("/api/links/verify", {
         method: "POST",
@@ -58,24 +134,27 @@ export default function SecretClientPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
-  const startExpiryTimer = (expiryDate: string) => {
-    const timer = setInterval(() => {
-      const distance = new Date(expiryDate).getTime() - Date.now();
-      if (distance < 0) {
-        clearInterval(timer);
-        setTimeLeft("EXPIRED");
-        setAllowed(false);
-        setReason("expired");
-      } else {
-        const d = Math.floor(distance / 86400000);
-        const h = Math.floor((distance % 86400000) / 3600000);
-        const m = Math.floor((distance % 3600000) / 60000);
-        setTimeLeft(`${d}d ${h}h ${m}m`);
-      }
-    }, 1000);
-  };
+  // Disable right-click + verify token on mount
+  useEffect(() => {
+    const prevent = (e: MouseEvent) => e.preventDefault();
+    document.addEventListener("contextmenu", prevent);
+
+    if (!initialData) {
+      verifyToken();
+    } else {
+      // Even with SSR data provided, still call verifyToken to enforce payment gate
+      // and increment view counter. This fixes the SSR view-count bypass (Issue #19).
+      verifyToken();
+    }
+
+    // Issue #23 fix: clean up the expiry timer interval on unmount
+    return () => {
+      document.removeEventListener("contextmenu", prevent);
+      if (expiryTimerRef.current) clearInterval(expiryTimerRef.current);
+    };
+  }, [initialData, verifyToken]);
 
   const toggleMute = () => {
     if (audioRef.current) {
@@ -89,7 +168,6 @@ export default function SecretClientPage({
     audioRef.current?.play().catch(() => {});
   };
 
-  // ── YES handler with confetti burst ──────────────────────────────────────
   const handleYes = () => {
     setAccepted(true);
     const end = Date.now() + 6000;
@@ -109,38 +187,22 @@ export default function SecretClientPage({
     setNoCount((c) => c + 1);
   };
 
-  const noLabel = ["No 💔", "Are you sure? 🥺", "Think again! 😭", "Pleaaase? 🧸", "You can't say no! 😉", "Yes! ❤️"][Math.min(noCount, 5)];
+  const noLabel = useMemo(() => 
+    ["No 💔", "Are you sure? 🥺", "Think again! 😭", "Pleaaase? 🧸", "You can't say no! 😉", "Yes! ❤️"][Math.min(noCount, 5)],
+    [noCount]
+  );
 
-  // ── YES / NO button block (reused in both layouts) ────────────────────
-  const YesNoButtons = () =>
-    accepted ? (
-      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="text-center">
-        <p className="text-4xl md:text-6xl font-black text-emerald-400 mb-4">IT'S A YES! 💍💖</p>
-        <p className="text-rose-200/70 text-xl italic mt-4">"Pyaar karo, propose karo."</p>
-      </motion.div>
-    ) : (
-      <div className="flex flex-wrap gap-5 justify-center items-center min-h-[100px] relative mt-6">
-        <button
-          onClick={handleYes}
-          style={{ transform: `scale(${1 + noCount * 0.12})` }}
-          className="bg-emerald-500 text-white px-14 py-5 rounded-full font-black text-2xl shadow-[0_20px_60px_rgba(16,185,129,0.4)] hover:scale-110 active:scale-95 transition-all z-40"
-        >
-          YES! 💍
-        </button>
-        <motion.button
-          animate={{ x: noOffset.x, y: noOffset.y }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          onMouseEnter={handleNoHover}
-          onTouchStart={handleNoHover}
-          onClick={noCount >= 5 ? handleYes : handleNoHover}
-          className="bg-white/10 backdrop-blur-xl border border-white/20 text-white px-14 py-5 rounded-full font-black text-2xl hover:bg-white/20 transition-all cursor-pointer z-50"
-        >
-          {noLabel}
-        </motion.button>
-      </div>
-    );
+  // Auto scroll logic when Chat Timeline gets revealed
+  useEffect(() => {
+    if (accepted) {
+      const timer = setTimeout(() => {
+        setTimelineRevealed(true);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [accepted]);
 
-  // ── Loading ───────────────────────────────────────────────────────────
+  // ── Loading ───────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen bg-rose-950 flex flex-col items-center justify-center">
@@ -152,7 +214,7 @@ export default function SecretClientPage({
     );
   }
 
-  // ── Blocked / Expired ─────────────────────────────────────────────────
+  // ── Blocked / Expired ─────────────────────────────────────────────
   if (!allowed) {
     const messages: Record<string, string> = {
       limit_reached: "This private link has reached its view limit. A beautiful secret is now locked forever.",
@@ -179,11 +241,20 @@ export default function SecretClientPage({
     );
   }
 
-  const hasMedia = proposalData.mediaUrls && proposalData.mediaUrls.length > 0;
+  const hasMedia = proposalData?.mediaUrls && proposalData.mediaUrls.length > 0;
 
   return (
-    <div className={`min-h-screen bg-black overflow-hidden select-none ${proposalData.fontStyle === "romantic" ? "font-serif italic" : proposalData.fontStyle === "elegant" ? "font-serif" : "font-sans"}`}>
-      <audio ref={audioRef} loop src={proposalData.musicTrack} />
+    <div className={`min-h-screen bg-black overflow-x-hidden relative select-none ${proposalData?.fontStyle === "romantic" ? "font-serif italic" : proposalData?.fontStyle === "elegant" ? "font-serif" : "font-sans"}`}>
+      {/* Screenshot/Recording protection Watermark */}
+      <div className="fixed inset-0 pointer-events-none z-[999] opacity-[0.03] select-none flex flex-wrap gap-12 p-8 overflow-hidden font-mono text-[9px] uppercase tracking-widest text-white">
+        {Array.from({ length: 48 }).map((_, i) => (
+          <span key={i} className="rotate-12 transform">
+            {proposalData?.partnerName} ♡ {proposalData?.yourName}
+          </span>
+        ))}
+      </div>
+
+      <audio ref={audioRef} loop src={proposalData?.musicTrack} />
 
       <AnimatePresence>
         {/* ── Intro splash ─────────────────────────────────────────────── */}
@@ -194,7 +265,7 @@ export default function SecretClientPage({
               <div className="w-24 h-24 bg-gradient-to-br from-rose-500 to-pink-600 rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-[0_20px_50px_rgba(225,29,72,0.5)] rotate-12">
                 <Heart className="w-10 h-10 text-white fill-current" />
               </div>
-              <p className="text-rose-300/60 font-black uppercase tracking-[0.4em] text-[10px] mb-4">A Private Experience for {proposalData.partnerName}</p>
+              <p className="text-rose-300/60 font-black uppercase tracking-[0.4em] text-[10px] mb-4">A Private Experience for {proposalData?.partnerName}</p>
               <h1 className="text-5xl md:text-6xl font-black text-white mb-12 italic tracking-tighter leading-[0.9]">Unlock Your<br />Surprise</h1>
               <button onClick={startExperience} className="bg-white text-rose-950 px-12 py-6 rounded-full font-black text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-4 mx-auto group">
                 Tap to Reveal 💌 <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-all" />
@@ -204,9 +275,8 @@ export default function SecretClientPage({
         )}
 
         {/* ── Main experience ───────────────────────────────────────────── */}
-        {showContent && (
+        {showContent && proposalData && (
           <motion.div key="experience" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative h-screen">
-
             {/* HUD top bar */}
             <div className="fixed top-0 left-0 w-full p-6 z-[100] flex justify-between items-start pointer-events-none">
               <div className="space-y-2">
@@ -232,17 +302,15 @@ export default function SecretClientPage({
               </div>
             </div>
 
-            {/* Watermark */}
+            {/* Bottom Watermark */}
             <div className="fixed bottom-8 left-8 z-[100] opacity-30 flex items-center gap-2 pointer-events-none">
               <div className="w-5 h-5 bg-white/10 rounded-lg flex items-center justify-center"><Heart className="w-3 h-3 text-white" /></div>
               <span className="text-[8px] font-black uppercase tracking-[0.4em] text-white/60">Made via Purpose 🏹</span>
             </div>
 
-            {/* ── Snap-scroll slides ─────────────────────────────────────── */}
+            {/* ── Snap-scroll slides / Stages ─────────────────────────────── */}
             <div className="snap-y snap-mandatory h-screen overflow-y-scroll custom-scrollbar scroll-smooth">
-
               {!hasMedia ? (
-                /* No media — single cinematic card */
                 <div className="snap-start h-screen w-full relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-rose-950 via-black to-purple-950">
                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(225,29,72,0.2)_0%,_transparent_70%)]" />
                   <div className="relative z-30 flex flex-col items-center p-12 text-center max-w-2xl">
@@ -252,56 +320,138 @@ export default function SecretClientPage({
                     <h2 className="text-6xl md:text-8xl font-black mb-6 italic tracking-tighter text-white">Hi {proposalData.partnerName}</h2>
                     <p className="text-rose-200/70 text-xl font-medium italic mb-10">A special message from {proposalData.yourName} ❤️</p>
                     <h3 className="text-3xl md:text-5xl font-black mb-8 tracking-tighter drop-shadow-2xl text-white">{proposalData.question}</h3>
-                    <YesNoButtons />
+                    <YesNoButtons
+                      accepted={accepted}
+                      noCount={noCount}
+                      noOffset={noOffset}
+                      handleYes={handleYes}
+                      handleNoHover={handleNoHover}
+                      noLabel={noLabel}
+                    />
                   </div>
                 </div>
               ) : (
-                /* Media slides */
-                proposalData.mediaUrls.map((url: string, i: number) => (
-                  <div key={i} className="snap-start h-screen w-full relative flex items-center justify-center overflow-hidden">
-                    <img src={url} className="absolute inset-0 w-full h-full object-cover scale-110" style={{ filter: proposalData.filterType || "" }} />
-                    {proposalData.effectType === "hearts" && <div className="absolute inset-0 z-20 pointer-events-none opacity-40 bg-[url('https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif')] bg-cover mix-blend-screen scale-125" />}
-                    {proposalData.effectType === "petals" && <div className="absolute inset-0 z-20 pointer-events-none opacity-30 bg-[url('https://media.giphy.com/media/l41lTfJvP2uX7O5tC/giphy.gif')] bg-cover mix-blend-screen scale-150" />}
-                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-gradient-to-t from-black/90 via-transparent to-black/60 p-12 text-center">
-                      {i === 0 && (
-                        <motion.div initial={{ y: 50, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ duration: 1 }}>
-                          <h2 className="text-7xl md:text-9xl font-black mb-8 drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] tracking-tighter italic text-white">Hi {proposalData.partnerName}</h2>
-                          <p className="text-xl md:text-2xl text-rose-200/80 font-medium italic">A message from {proposalData.yourName} ❤️</p>
-                        </motion.div>
-                      )}
-                      {i === proposalData.mediaUrls.length - 1 && (
-                        <motion.div initial={{ scale: 0.8, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} className="max-w-3xl mx-auto w-full px-4">
-                          {accepted ? (
-                            <div className="text-center">
-                              <div className="w-32 h-32 bg-gradient-to-br from-rose-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-10 shadow-[0_0_100px_rgba(244,63,94,0.8)] animate-pulse">
-                                <Heart className="w-16 h-16 fill-current text-white animate-bounce" />
-                              </div>
-                              <h2 className="text-5xl md:text-8xl font-black mb-6 leading-[0.85] tracking-tighter text-white drop-shadow-2xl">IT'S A YES! 💍💖</h2>
-                              <p className="text-2xl text-rose-200/90 font-serif italic mb-10">"I love you, now and forever. Pyaar karo, propose karo."</p>
-                              <button onClick={() => window.open(`mailto:${proposalData.customerEmail}?subject=I SAID YES! 💍&body=I opened your secret link and I said YES! 💖`, "_blank")} className="bg-emerald-500 text-white px-10 py-4 rounded-full font-black text-lg shadow-lg hover:scale-105 transition-all">
-                                Send Email Response ✉️
-                              </button>
+                (proposalData.mediaUrls || []).map((url: string, i: number) => {
+                  const isStage1 = i === 1;
+                  const isStage2 = i === 2;
+
+                  return (
+                    <div key={i} className="snap-start h-screen w-full relative flex items-center justify-center overflow-hidden">
+                      <Image 
+                        src={url} 
+                        alt={`Memory ${i}`} 
+                        fill
+                        className="absolute inset-0 w-full h-full object-cover scale-110" 
+                        style={{ filter: proposalData.filterType || "" }}
+                      />
+                      {proposalData.effectType === "hearts" && <div className="absolute inset-0 z-20 pointer-events-none opacity-40 bg-[url('https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif')] bg-cover mix-blend-screen scale-125" />}
+                      {proposalData.effectType === "petals" && <div className="absolute inset-0 z-20 pointer-events-none opacity-30 bg-[url('https://media.giphy.com/media/l41lTfJvP2uX7O5tC/giphy.gif')] bg-cover mix-blend-screen scale-150" />}
+                      <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-gradient-to-t from-black/90 via-transparent to-black/60 p-12 text-center">
+                        {i === 0 && (
+                          <motion.div initial={{ y: 50, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ duration: 1 }}>
+                            <h2 className="text-7xl md:text-9xl font-black mb-8 drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] tracking-tighter italic text-white">Hi {proposalData.partnerName}</h2>
+                            <p className="text-xl md:text-2xl text-rose-200/80 font-medium italic">A message from {proposalData.yourName} ❤️</p>
+                            <div className="mt-8 bg-white/10 px-6 py-2 rounded-full border border-white/20 inline-block text-xs font-semibold tracking-wider text-rose-200">
+                              Stage 1: The Memory Beginning ✨
                             </div>
-                          ) : (
-                            <div>
-                              <div className="w-24 h-24 bg-rose-600 rounded-full flex items-center justify-center mx-auto mb-10 shadow-[0_0_80px_rgba(225,29,72,0.6)] animate-pulse">
-                                <Heart className="w-12 h-12 fill-current text-white" />
+                          </motion.div>
+                        )}
+
+                        {isStage1 && (
+                          <div className="max-w-md bg-black/60 border border-pink-500/30 p-8 rounded-3xl backdrop-blur-md">
+                            <Sparkles className="w-10 h-10 text-pink-400 mx-auto mb-4 animate-spin" />
+                            <h3 className="text-xl font-bold text-white mb-2">Stage 2: Surprise Unlocked! 🧸</h3>
+                            <p className="text-sm text-gray-300">
+                              &quot;Har ek pal tumhare saath ek nayi story hai. Humne jo time sath bitaya hai, wo mere life ka sabse precious gift hai.&quot;
+                            </p>
+                          </div>
+                        )}
+
+                        {isStage2 && (
+                          <div className="max-w-md bg-black/60 border border-purple-500/30 p-8 rounded-3xl backdrop-blur-md">
+                            <Heart className="w-10 h-10 text-rose-500 fill-current mx-auto mb-4 animate-bounce" />
+                            <h3 className="text-xl font-bold text-white mb-2">Stage 3: Secret Message 💌</h3>
+                            <p className="text-sm text-gray-300 italic">
+                              &quot;Main tumse dur hokar bhi hamesha tumhare kareeb rehta hoon. Yeh link sirf ek medium hai mere dil ki baat batane ka.&quot;
+                            </p>
+                          </div>
+                        )}
+
+                        {i === (proposalData.mediaUrls?.length ?? 0) - 1 && (
+                          <motion.div initial={{ scale: 0.8, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} className="max-w-3xl mx-auto w-full px-4 z-40">
+                            {accepted ? (
+                              <div className="text-center w-full max-h-[85vh] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_80px_rgba(244,63,94,0.8)] animate-pulse">
+                                  <Heart className="w-10 h-10 fill-current text-white animate-bounce" />
+                                </div>
+                                <h2 className="text-4xl md:text-7xl font-black mb-4 leading-[0.85] tracking-tighter text-white drop-shadow-2xl">IT&apos;S A YES! 💍💖</h2>
+                                <p className="text-xl text-rose-200/90 font-serif italic mb-6">&quot;I love you, now and forever. Pyaar karo, propose karo.&quot;</p>
+                                
+                                {timelineRevealed && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-zinc-950/90 border border-zinc-800 p-6 rounded-[2.5rem] text-left max-w-lg mx-auto mb-8 shadow-2xl"
+                                  >
+                                    <div className="flex items-center gap-3 border-b border-zinc-800 pb-3 mb-4">
+                                      <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-lg">W</div>
+                                      <div>
+                                        <h4 className="text-sm font-bold text-white">Our Timeline Feed 💬</h4>
+                                        <p className="text-[10px] text-zinc-500">Chronological exported memories</p>
+                                      </div>
+                                    </div>
+                                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar text-xs font-sans">
+                                      <div className="bg-zinc-900 border border-zinc-800/40 p-3 rounded-2xl max-w-[85%]">
+                                        <p className="text-zinc-400 font-bold mb-1">{proposalData.yourName}:</p>
+                                        <p className="text-zinc-200">First time I saw you. Best day of my life.</p>
+                                        <span className="text-[8px] text-zinc-500 block text-right mt-1">11:11 AM</span>
+                                      </div>
+                                      <div className="bg-emerald-900/40 border border-emerald-800/40 p-3 rounded-2xl max-w-[85%] ml-auto">
+                                        <p className="text-emerald-400 font-bold mb-1">{proposalData.partnerName}:</p>
+                                        <p className="text-zinc-200">Everything changed when our paths crossed. ❤️</p>
+                                        <span className="text-[8px] text-emerald-600 block text-right mt-1">11:12 AM</span>
+                                      </div>
+                                      <div className="bg-zinc-900 border border-zinc-800/40 p-3 rounded-2xl max-w-[85%]">
+                                        <p className="text-zinc-400 font-bold mb-1">{proposalData.yourName}:</p>
+                                        <p className="text-zinc-200">I promise to stand by your side. Forever.</p>
+                                        <span className="text-[8px] text-zinc-500 block text-right mt-1">11:15 AM</span>
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                )}
+
+                                <button onClick={() => window.open(`mailto:${proposalData.customerEmail}?subject=I SAID YES! 💍&body=I opened your secret link and I said YES! 💖`, "_blank")} className="bg-emerald-500 text-white px-10 py-4 rounded-full font-black text-lg shadow-lg hover:scale-105 transition-all">
+                                  Send Email Response ✉️
+                                </button>
                               </div>
-                              <h2 className="text-5xl md:text-7xl font-black mb-10 leading-[0.9] tracking-tighter drop-shadow-2xl text-white">{proposalData.question}</h2>
-                              <YesNoButtons />
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                      {i < proposalData.mediaUrls.length - 1 && (
-                        <div className="absolute bottom-12 flex flex-col items-center gap-3 opacity-40">
-                          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Swipe Up</span>
-                          <ChevronDown className="w-6 h-6 animate-bounce text-white" />
-                        </div>
-                      )}
+                            ) : (
+                              <div>
+                                <div className="w-24 h-24 bg-rose-600 rounded-full flex items-center justify-center mx-auto mb-10 shadow-[0_0_80px_rgba(225,29,72,0.6)] animate-pulse">
+                                  <Heart className="w-12 h-12 fill-current text-white" />
+                                </div>
+                                <h2 className="text-5xl md:text-7xl font-black mb-10 leading-[0.9] tracking-tighter drop-shadow-2xl text-white">{proposalData.question}</h2>
+                                <YesNoButtons
+                                  accepted={accepted}
+                                  noCount={noCount}
+                                  noOffset={noOffset}
+                                  handleYes={handleYes}
+                                  handleNoHover={handleNoHover}
+                                  noLabel={noLabel}
+                                />
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                        {i < (proposalData.mediaUrls?.length ?? 0) - 1 && (
+                          <div className="absolute bottom-12 flex flex-col items-center gap-3 opacity-40">
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Swipe Up</span>
+                            <ChevronDown className="w-6 h-6 animate-bounce text-white" />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 
@@ -323,7 +473,6 @@ export default function SecretClientPage({
                 </div>
               </div>
             </div>
-
           </motion.div>
         )}
       </AnimatePresence>

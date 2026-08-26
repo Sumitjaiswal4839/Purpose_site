@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "setup-dev": "ts-node scripts/setup-dev.ts",
     "dev": "SET PRISMA_CLIENT_ENGINE_TYPE=library && next dev",
     "build": "SET PRISMA_CLIENT_ENGINE_TYPE=library && next build",
     "start": "next start",
@@ -42,6 +43,7 @@
     "eslint-config-next": "latest",
     "prisma": "^7.8.0",
     "tailwindcss": "latest",
+    "ts-node": "^10.9.2",
     "typescript": "latest"
   }
 }

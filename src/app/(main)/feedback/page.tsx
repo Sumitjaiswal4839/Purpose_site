@@ -74,7 +74,7 @@ export default function FeedbackPage() {
       {/* Toast */}
       <AnimatePresence>{toast && <Toast message={toast.message} type={toast.type} />}</AnimatePresence>
 
-      <div className="max-w-2xl mx-auto px-6 pt-28 pb-20">
+      <div className="max-w-xl mx-auto px-6 pt-28 pb-20">
 
         {/* Back link */}
         <Link
@@ -92,7 +92,7 @@ export default function FeedbackPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96 }}
-              className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-rose-100/30 border border-rose-100/60 relative overflow-hidden"
+              className="bg-white rounded-2xl p-6 md:p-8 shadow-lg shadow-rose-100/30 border border-rose-100/60 relative overflow-hidden"
             >
               {/* Decorative blob */}
               <div className="absolute top-0 right-0 w-56 h-56 bg-rose-50 rounded-full blur-[80px] -mr-28 -mt-28 pointer-events-none" />

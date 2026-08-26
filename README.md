@@ -1,113 +1,51 @@
-# 🏹 PURPOSE SITE: THE ULTIMATE ROMANTIC PROPOSAL SAAS
+# Purpose 💘 - Interactive Digital Proposal SaaS
 
-Built with **Next.js 15**, **Prisma (PostgreSQL)**, and **Tailwind CSS**. A premium, high-end platform for creating and sharing interactive 3D romantic proposal experiences.
+An end-to-end Full-Stack SaaS platform that allows users to create highly interactive, cinematic, and personalized digital proposal experiences (web pages). Designed with a focus on seamless user experience, secure payment gateways, and scalable architecture.
 
----
+## 📝 1. Clear Explanation
+* **The Problem:** People want unique, memorable ways to propose or express feelings digitally, but lack coding skills to build interactive, cinematic web experiences.
+* **The Solution:** A SaaS platform offering no-code, drag-and-drop style customization of premium interactive templates with integrated background scores and VFX.
+* **Implementation:** Built using Next.js for SSR/SSG, Prisma + PostgreSQL for robust relational data management, and Framer Motion for 60fps cinematic animations.
+* **The Result:** A highly converting, visually stunning platform where users can generate secure, shareable secret links in under 2 minutes.
 
-## 📊 PROJECT STATUS (April 5, 2026)
-**Current Status:** Phase 3 (Core Rendering & Media Integration)  
-**Infrastructure:** 🟢 PostgreSQL Connected | 🟢 Redis Connected | 🟢 Admin Authenticated  
-**Form Builder:** ✅ 100% Complete (All 4 Steps)  
-**Admin Dashboard:** ✅ 100% Upgraded (Now Database-Backed)
-
----
-
-## 🔥 RECENT UPGRADES (Last 30 Mins)
-- **Database Transformation**: Switched from JSON files to **Prisma Postgres** for Custom Order Requests.
-- **Admin Dashboard Upgrade**: Added "New" and "Past" (History) tabs for managing custom orders.
-- **Migration Script Created**: `scripts/migrate.ts` is ready to sync all old JSON messages to the new database.
-- **Auth Fix**: Fixed missing authentication headers in the Admin Dashboard for secure data fetching.
-
----
-
-## 🟢 COMPLETED FEATURES (DONE)
-
-### 1. **Core Proposal Creator (`/create`)**
-- ✅ **Wizard Flow**: 4 interactive steps (Basics -> Media -> Styling -> Review).
-- ✅ **Editor Controls**: 5 filters, 4 VFX overlays, 3 font styles, and 4 high-quality background audio tracks.
-- ✅ **Persistence**: `localStorage` auto-backup ensures zero data loss during creation.
-- ✅ **Debug Panel**: Real-time data tracker in the corner for development.
-
-### 2. **Admin Control Room (`/admin`)**
-- ✅ **Credentials**: 
-  - **User**: `admin@purpose`
-  - **Pass**: `adminPurpose1223`
-- ✅ **Live Stats**: Tracking Total Proposals, Premium Upgrades, and Active Users.
-- ✅ **Custom Request Management**: 
-  - **New Requests Tab**: Active pending requests with urgency badges.
-  - **Past Requests Tab**: Historical archive of completed orders.
-  - **Mark as Done**: One-click status updates synced to Postgres.
-  - **Quick Reply**: Direct "WhatsApp Reply" button for instant client engagement.
-
-### 3. **Infrastructure & Security**
-- ✅ **Prisma PostgreSQL**: Fully configured with `SecretLink`, `AccessLog`, and `CustomRequest` models.
-- ✅ **Redis Caching**: Connected and ready for caching high-traffic proposal pages.
-- ✅ **Email System**: Gmail integration for automated payment alerts and verification links.
-- ✅ **Encryption Suite**: SHA256 and AES256 utilities for securing sensitive proposal data.
-
----
-
-## ⏳ PENDING TASKS (NOT COMPLETED)
-
-### 🔴 CRITICAL (Phase 3 Core) - DO THESE FIRST
-1. **The Secret Rendering UI (`/secret/[token]`)** ⚠️ (50% Done)
-   - Currently, it only shows a placeholder.
-   - **Need**: Implement the actual 3D proposal engine that uses the data from the database (Partner Name, Photos, Filter, Music, etc.).
-   - **File**: `src/app/secret/[token]/page.tsx`.
-
-2. **Cloudinary Media Persistence** ❌ (Not Started)
-   - Currently, images are only handled locally in `localStorage`.
-   - **Need**: Connect Cloudinary to store permanent URLs for the romantic photos.
-   - **Action**: Get Cloudinary credentials and update `.env`.
-
-### 🟡 HIGH PRIORITY (Security & Polish)
-- ❌ **View Limiting Logic**: Enforce the "2 Views Only" rule in the rendering page.
-- ❌ **Right-Click & Privacy**: Disable dev-tools and right-click on proposal pages to protect content.
-- ❌ **WhatsApp Automation**: Change email alerts to direct WhatsApp notifications for payment.
-
----
-
-## 🛠️ HOW TO RUN (COMMAND CENTER)
-
-### Setup & Sync
-```bash
-# 1. Sync Database Schema (Done ✅)
-npx prisma db push
-
-# 2. Transfer old JSON data to Database (CRITICAL)
-npx ts-node scripts/migrate.ts
-
-# 3. Open Database GUI to see data
-npx prisma studio
-
-# 4. Start Development Server
-npm run dev
+## 🏗️ 2. Architecture Diagram
+```mermaid
+graph TD
+    Client[Client Browser / Mobile] -->|HTTPS| NextJS[Next.js 15 App Router]
+    NextJS -->|API Calls| APIRoutes[Next.js Serverless APIs]
+    APIRoutes -->|Prisma ORM| DB[(PostgreSQL Database)]
+    APIRoutes -->|Verification| PaymentGateway[Payment Processor]
+    
+    subgraph Core Features
+    A[Template Engine]
+    B[State Management]
+    C[Dynamic Routing /secret/:token]
+    end
+    
+    NextJS --- CoreFeatures
 ```
 
----
+## 💻 3. Tech Stack
+* **Frontend:** React.js, Next.js 15, Tailwind CSS, Framer Motion
+* **Backend:** Next.js API Routes (Node.js edge/serverless)
+* **Database:** PostgreSQL, Prisma ORM
+* **Language:** TypeScript
 
-## 📂 FILE STRUCTURE & ARCHITECTURE
+## 🔐 4. Security Considerations
+* **Cryptographic Tokens:** URLs are generated using secure, unique hashes (CUID) to prevent IDOR (Insecure Direct Object Reference) and enumeration attacks.
+* **Payment Validation:** Server-side validation of transactions before activating the live URL.
+* **Content Protection:** Custom overlays and disabled right-click functions to protect premium assets.
 
-- `src/app/api/...` -> Database-backed endpoints using Prisma.
-- `src/lib/prisma.ts` -> Central database client.
-- `src/components/admin/...` -> Dashboard components.
-- `data/` -> (DEPRECATED) Old JSON logs (Use Postgres moving forward).
-- `scripts/migrate.ts` -> Migration utility for JSON to DB.
+## ⚠️ 5. Error Handling
+* **Graceful Degradation:** Fallback UI components (e.g., Expired/Invalid link pages).
+* **Robust API Responses:** Standardized JSON error payloads `({ success: false, error: "Reason" })` mapped to frontend toast notifications/modals.
 
----
+## 🔌 6. Database & APIs
+* **Relational Schema:** Prisma schema ensures strict data typing and relations between Transactions, Customers, and generated Proposals.
+* **RESTful Endpoints:** Secure POST/GET endpoints for data mutation and retrieval.
 
-## 📞 QUICK LINKS
-- **Homepage**: [Launch Site](http://localhost:3000/)
-- **Creator Tool**: [Build Proposal](http://localhost:3000/create)
-- **Admin Panel**: [Command Room](http://localhost:3000/admin)
-- **Custom Request**: [Submit Idea](http://localhost:3000/custom-request)
+## 🧪 7. Tests (Implementation Strategy)
+* Codebase is structured to support **Jest** for unit testing API route logic and **Playwright** for End-to-End (E2E) testing of the creation pipeline.
 
----
-
-> [!TIP]
-> All legacy `.md` files (PROJECT_STATUS, info, etc.) have been consolidated here. For deeper API documentation, see individual route files.
-
-🏹 **Keep Proposal-ing!**
-# Purpose_site
-# Purpose_site
-# Purpose_site
+## 🚀 8. Deployment
+* Optimized for **Vercel** (Frontend & APIs) and **Neon/Supabase** (PostgreSQL).

@@ -576,7 +576,7 @@ export default function TemplatesPage() {
                        </div>
                        <div className="pt-5 border-t border-gray-100 flex items-center justify-between gap-2">
                           <Link 
-                            href={theme.href || "/preview"}
+                            href={`/create?template=${theme.href ? theme.href.split('/').pop() : ''}`}
                             className="text-gray-500 font-medium text-xs hover:text-gray-900 transition-colors"
                           >
                             Preview

@@ -214,7 +214,7 @@ export default function Home() {
 
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {themes.map((theme, i) => (
-                <Link href={theme.href} key={i}>
+                <Link href={`/create?template=${theme.href.split('/').pop()}`} key={i}>
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}

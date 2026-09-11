@@ -11,6 +11,10 @@ if (!SECRET) {
 const SIGNING_SECRET = SECRET;
 const TOKEN_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
 
+// In-memory cache for validated active admin usernames (60s TTL)
+const adminCache = new Map<string, { isActive: boolean; cachedAt: number }>();
+const ADMIN_CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
 function sign(payload: string): string {
   return crypto.createHmac("sha256", SIGNING_SECRET).update(payload).digest("hex");
 }
@@ -47,18 +51,24 @@ export async function verifyAdminToken(token: string | null): Promise<boolean> {
   const [username, expiryStr] = payload.split(":");
   if (Date.now() > Number(expiryStr)) return false; // expired
 
+  // In-memory cache to reduce redundant DB lookups during concurrent dashboard requests
+  const cached = adminCache.get(username);
+  if (cached && Date.now() - cached.cachedAt < ADMIN_CACHE_TTL_MS) {
+    return cached.isActive;
+  }
+
   // Ensure admin still exists and is active in DB
   try {
     const adminUser = await prisma.admin.findUnique({
-      where: { username }
+      where: { username },
     });
-    if (!adminUser) return false;
+    const isActive = Boolean(adminUser && adminUser.isActive);
+    adminCache.set(username, { isActive, cachedAt: Date.now() });
+    return isActive;
   } catch (err) {
     console.error("verifyAdminToken db error:", err);
     return false; // Fail safe
   }
-
-  return true;
 }
 
 export async function getAdminUsernameFromToken(token: string | null): Promise<string | null> {

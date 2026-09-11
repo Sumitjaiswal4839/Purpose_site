@@ -39,7 +39,7 @@
     "react-dom": "^19.2.7",
     "recharts": "^3.9.0",
     "swagger-jsdoc": "^6.3.0",
-    "swagger-ui-react": "^3.51.2"
+    "swagger-ui-dist": "^5.32.15"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
@@ -54,7 +54,6 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/swagger-jsdoc": "^6.0.4",
-    "@types/swagger-ui-react": "^5.18.0",
     "dotenv": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",

@@ -191,6 +191,20 @@ export default function AdminDashboard() {
   // Issue #24 fix: store interval in a ref so handleLogout can clear it
   const pollingIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
+  const handleLogout = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminAuth");
+    setIsAuthenticated(false);
+    setAdminToken("");
+    setStatsData(null);
+    setRecentProposals([]);
+    setActivityFeed([]);
+  }, []);
+
   const fetchDashboardData = useCallback(async (token: string) => {
     setIsDataLoading(true);
     try {
@@ -199,6 +213,12 @@ export default function AdminDashboard() {
         fetch("/api/admin/links",  { headers: { "x-admin-token": token } }),
         fetch("/api/admin/custom-requests", { headers: { "x-admin-token": token } }),
       ]);
+
+      if (statsRes.status === 401 || linksRes.status === 401 || reqRes.status === 401) {
+        handleLogout();
+        return;
+      }
+
       if (statsRes.ok) { const d = await statsRes.json(); if (d.success) setStatsData(d.stats); }
       if (linksRes.ok) { const d = await linksRes.json(); if (d.success) setRecentProposals(d.links.slice(0, 5)); }
       if (reqRes.ok)   { const d = await reqRes.json();   if (d.success) setCustomRequests(d.requests); }
@@ -211,71 +231,32 @@ export default function AdminDashboard() {
     } finally { 
       setIsDataLoading(false); 
     }
+  }, [handleLogout]);
+
+  // On mount: restore session from localStorage if present
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      setAdminToken(token);
+      setIsAuthenticated(true);
+    }
   }, []);
 
-  /**
-   * Issue #19, #20, #21 fixes:
-   * - No Math.random() fake visitor counts
-   * - No randomly injected fake activity feed events
-   * - Polls real API data only; activity feed built from actual fetched data
-   *
-  /**
-   * Issue #4 fix: Admin UI was accessible to anyone who set adminToken in
-   * localStorage manually. Now we validate the token against the server on
-   * every page load. If the server rejects it (expired/invalid), we clear
-   * localStorage and force the login screen.
-   *
-   * Issue #19, #20, #21 fixes:
-   * - No Math.random() fake visitor counts
-   * - No randomly injected fake activity feed events
-   * - Polls real API data only; activity feed built from actual fetched data
-   *
-   * Issue #24 fix:
-   * - interval stored in pollingIntervalRef so handleLogout can clear it immediately
-   */
-
-  // On mount: validate stored token with server before granting UI access
+  // Fetch dashboard data on authentication and start polling
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) return; // no token → stay on login screen
+    if (!isAuthenticated || !adminToken) return;
 
-    // Hit a lightweight admin endpoint to validate the token server-side
-    fetch("/api/admin/stats", { headers: { "x-admin-token": token } })
-      .then((res) => {
-        if (res.ok) {
-          // Token is valid — restore session
-          setAdminToken(token);
-          setIsAuthenticated(true);
-        } else {
-          // Token invalid/expired — clear everything, force re-login
-          localStorage.removeItem("adminToken");
-          localStorage.removeItem("adminAuth");
-        }
-      })
-      .catch(() => {
-        // Network error — clear session to be safe
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminAuth");
-      });
-  }, []); // runs once on mount
+    fetchDashboardData(adminToken);
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const token = localStorage.getItem("adminToken");
-    if (!token) return;
-
-    setAdminToken(token);
-    fetchDashboardData(token);
-
-    // Poll every 30 seconds (real data only — no fake randomness)
+    // Poll every 30 seconds
     pollingIntervalRef.current = setInterval(() => {
-      fetchDashboardData(token);
+      fetchDashboardData(adminToken);
     }, 30000);
 
     return () => {
       if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
     };
-  }, [fetchDashboardData, isAuthenticated]);
+  }, [fetchDashboardData, isAuthenticated, adminToken]);
 
   // Build activity feed from REAL fetched data whenever recentProposals changes
   useEffect(() => {
@@ -294,21 +275,6 @@ export default function AdminDashboard() {
     setActivityFeed(feed);
   }, [recentProposals]);
 
-  const handleLogout = () => {
-    // Issue #24 fix: clear polling interval immediately on logout
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminAuth");
-    setIsAuthenticated(false);
-    setAdminToken("");
-    setStatsData(null);
-    setRecentProposals([]);
-    setActivityFeed([]);
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(""); setIsLoading(true);
@@ -320,11 +286,10 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setIsAuthenticated(true);
-        setAdminToken(data.token);
         localStorage.setItem("adminToken", data.token);
         localStorage.setItem("adminAuth", "true");
-        fetchDashboardData(data.token);
+        setAdminToken(data.token);
+        setIsAuthenticated(true);
       } else {
         setLoginError(data.message || "Unauthorized.");
       }

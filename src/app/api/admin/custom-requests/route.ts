@@ -72,7 +72,16 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id, status } = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Invalid JSON format in request body" },
+        { status: 400 }
+      );
+    }
+    const { id, status } = body ?? {};
 
     if (!id || typeof id !== "string") {
       return NextResponse.json({ success: false, error: "id is required" }, { status: 400 });

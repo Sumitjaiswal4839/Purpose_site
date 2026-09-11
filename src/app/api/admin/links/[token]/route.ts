@@ -18,7 +18,15 @@ export async function PATCH(
     }
 
     const { token } = await params;
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Invalid JSON format in request body" },
+        { status: 400 }
+      );
+    }
     const { action } = body ?? {};
 
     if (!action || !["expire", "reset", "extend"].includes(action)) {

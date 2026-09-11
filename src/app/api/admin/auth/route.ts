@@ -6,12 +6,20 @@ import { logAdminAction } from "@/lib/auditLog";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, message: "Invalid JSON format in request body" },
+        { status: 400 }
+      );
+    }
     const { username, password } = body ?? {};
 
     if (typeof username !== "string" || typeof password !== "string") {
       return NextResponse.json(
-        { success: false, message: "Invalid request body" },
+        { success: false, message: "Username and password are required strings" },
         { status: 400 }
       );
     }

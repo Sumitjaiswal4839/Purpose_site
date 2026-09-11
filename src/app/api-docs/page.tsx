@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-import "swagger-ui-react/swagger-ui.css";
-
-// SwaggerUI touches `window`, so it must be client-only + dynamically imported (no SSR)
-const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false });
+import SwaggerUIComponent from "@/components/SwaggerUIComponent";
 
 export default function ApiDocsPage() {
   const [status, setStatus] = useState<"checking" | "denied" | "ok">("checking");
@@ -61,7 +57,7 @@ export default function ApiDocsPage() {
 
   return (
     <section className="container mx-auto p-4">
-      <SwaggerUI spec={spec} />
+      <SwaggerUIComponent spec={spec} />
     </section>
   );
 }

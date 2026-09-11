@@ -4,7 +4,13 @@ import nodemailer from 'nodemailer';
 
 export async function POST(req: Request) {
   try {
-    const { token, response } = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON format in request body' }, { status: 400 });
+    }
+    const { token, response } = body ?? {};
 
     if (!token || !response) {
       return NextResponse.json({ error: 'Token and response are required' }, { status: 400 });

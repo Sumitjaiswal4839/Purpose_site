@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // ========== SECRET LINK MODEL ==========
@@ -37,6 +37,11 @@ model SecretLink {
   currentViews        Int       @default(0)
   isActive            Boolean   @default(false)
   expiresAt           DateTime
+  unlocksAt           DateTime?
+  
+  // Partner Response
+  partnerResponse     String?
+  respondedAt         DateTime?
   
   // Payment Info
   paymentStatus       String    @default("pending") // pending | verified | failed
@@ -121,10 +126,27 @@ model Admin {
   isActive          Boolean   @default(true)
   lastLogin         DateTime?
   
+  actionLogs        AdminActionLog[]
+  
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   
   @@index([email])
+}
+
+// ========== ADMIN ACTION LOG MODEL ==========
+model AdminActionLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  admin       Admin    @relation(fields: [adminId], references: [id])
+  action      String
+  targetId    String?
+  details     String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+  
+  @@index([adminId])
+  @@index([action])
 }
 
 // ========== TEMPLATE CONFIG MODEL ==========

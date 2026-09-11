@@ -1,28 +1,34 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cache } from "@/lib/cache";
 import { isAdminRequest } from "@/lib/adminAuth";
-
-/**
- * GET /api/admin/stats
- *
- * Fixes applied:
- * - Issue #1 / #9: Uses isAdminRequest() — signed HMAC token verification
- */
+import { redis } from '@/lib/redis';
 
 const STATS_CACHE_KEY = "admin:stats";
-const STATS_CACHE_TTL = 30; // seconds
+const STATS_CACHE_TTL = 300; // 5 minutes
 
 export async function GET(req: NextRequest) {
   try {
-    if (!isAdminRequest(req)) {
+    if (!(await isAdminRequest(req))) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check cache first
-    const cached = await cache.get<object>(STATS_CACHE_KEY);
-    if (cached) {
-      return NextResponse.json({ success: true, stats: cached, cached: true });
+    // Check Redis cache first
+    let cachedStatsStr = null;
+    if (redis) {
+      try {
+        cachedStatsStr = await redis.get<string>(STATS_CACHE_KEY);
+      } catch (err) {
+        console.error("Redis get failed:", err);
+      }
+    }
+    if (cachedStatsStr) {
+      let cachedStats;
+      try {
+        cachedStats = typeof cachedStatsStr === 'string' ? JSON.parse(cachedStatsStr) : cachedStatsStr;
+      } catch (e) {
+        cachedStats = cachedStatsStr;
+      }
+      return NextResponse.json({ success: true, stats: cachedStats, cached: true });
     }
 
     const now = new Date();
@@ -73,9 +79,15 @@ export async function GET(req: NextRequest) {
       recentProposals,
     };
 
-    await cache.set(STATS_CACHE_KEY, stats, STATS_CACHE_TTL);
+    if (redis) {
+      try {
+        await redis.setex(STATS_CACHE_KEY, STATS_CACHE_TTL, JSON.stringify(stats));
+      } catch (err) {
+        console.error("Redis setex failed:", err);
+      }
+    }
 
-    return NextResponse.json({ success: true, stats });
+    return NextResponse.json({ success: true, stats, cached: false });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[admin/stats]", message);

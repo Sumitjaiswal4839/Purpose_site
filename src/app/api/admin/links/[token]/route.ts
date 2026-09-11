@@ -13,7 +13,7 @@ export async function PATCH(
   { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    if (!isAdminRequest(req)) {
+    if (!(await isAdminRequest(req))) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 

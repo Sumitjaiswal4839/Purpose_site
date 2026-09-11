@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
+import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { generateSecureToken } from "@/lib/encryption";
 import { isAdminRequest } from "@/lib/adminAuth";
@@ -11,7 +12,7 @@ import { isAdminRequest } from "@/lib/adminAuth";
  */
 export async function POST(req: NextRequest) {
   try {
-    if (!isAdminRequest(req)) {
+    if (!(await isAdminRequest(req))) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
@@ -41,10 +42,7 @@ export async function POST(req: NextRequest) {
     }
 
     const token = generateSecureToken();
-    const transactionId = `MANUAL_${Date.now()}_${Math.random()
-      .toString(36)
-      .substring(2, 8)
-      .toUpperCase()}`;
+    const transactionId = `MANUAL_${Date.now()}_${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     const link = await prisma.secretLink.create({

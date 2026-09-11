@@ -1,18 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { 
-  ArrowLeft, Save, Sparkles, Image as ImageIcon, Wand2, 
-  Type, Music, Layout, MousePointerClick, PlayCircle, Film,
-  Plus, Trash2, Check, SlidersHorizontal, Settings, Clock, Search, QrCode, X,
-  Mail, User, Heart, AlertCircle, Copy, ExternalLink, Scan, ChevronDown, ArrowRight
+  ArrowLeft, Image as ImageIcon, 
+  Music, Layout, 
+  Plus, Trash2, Check, QrCode, X,
+  Heart, AlertCircle, Scan, ChevronDown
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import CreativeCanvas from "@/components/Editor/CreativeCanvas";
-import { AdvancedFilterPanel } from "@/components/Editor/AdvancedFilterPanel";
-import { templateRegistry } from "@/lib/templateRegistry";
 
 import BasicsForm from "@/components/BasicsForm";
 import EditorPanel from "@/components/Editor/Panels/EditorPanel";
@@ -20,12 +16,19 @@ import StylingPanel from "@/components/Editor/StylingPanel";
 
 function CreatePageContent() {
   const [step, setStep] = useState(1);
-  const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [uploadError, setUploadError] = useState("");
-  const router = useRouter();
+
+  const isVideo = (url: string) => url.match(/\.(mp4|webm|ogg)$/i) || url.includes('/video/upload/');
+  const isAudio = (url: string) => url.match(/\.(mp3|wav|ogg|mpeg)$/i) || url.includes('/video/upload/') && url.includes('audio');
+
+  const MediaThumbnail = ({ url, className, style }: { url: string, className?: string, style?: any }) => {
+    if (isVideo(url)) return <video src={url} className={className} style={style} autoPlay loop muted playsInline />;
+    if (isAudio(url)) return <div className={`flex items-center justify-center bg-gray-900 ${className}`} style={style}><Music className="w-8 h-8 text-white" /></div>;
+    return <img src={url} alt="Media thumbnail" className={className} style={style} />;
+  };
 
   // Form Data States
   const [formData, setFormData] = useState({
@@ -35,82 +38,34 @@ function CreatePageContent() {
     location: "",
     purpose: "",
     question: "Will you marry me?",
+    unlocksAt: "",
   });
 
   // Editor specific states
-  const [activeFilterStyle, setActiveFilterStyle] = useState("");
-  const [activeFilterName, setActiveFilterName] = useState("Original");
+  const activeFilterStyle = "";
   const [generatedToken, setGeneratedToken] = useState("");
   const [selectedEffect, setSelectedEffect] = useState("hearts");
   const [selectedFont, setSelectedFont] = useState("elegant");
   const [selectedInspiration, setSelectedInspiration] = useState("memories");
   const [selectedTrack, setSelectedTrack] = useState("Soft Piano (Classic)");
   const [selectedTrackUrl, setSelectedTrackUrl] = useState("/songs/soft-piano.mp3");
-  const [evadingNo, setEvadingNo] = useState(true);
 
-  // Music Search States
-  const [musicSearchQuery, setMusicSearchQuery] = useState("");
-  const [musicResults, setMusicResults] = useState<any[]>([]);
-  const [isSearchingMusic, setIsSearchingMusic] = useState(false);
+  const [mediaEdits, setMediaEdits] = useState<Record<string, { brightness: number; contrast: number; filter: string }>>({});
+  const [selectedTier, setSelectedTier] = useState<'basic' | 'premium'>('premium');
 
-  const searchMusic = async () => {
-    if (!musicSearchQuery) return;
-    setIsSearchingMusic(true);
-    try {
-      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(musicSearchQuery)}&media=music&limit=10`);
-      const data = await res.json();
-      if (data.results) {
-        setMusicResults(data.results.map((r: any) => ({
-          id: r.trackId.toString(),
-          name: r.trackName,
-          artist: r.artistName,
-          duration: new Date(r.trackTimeMillis).toISOString().substr(14, 5),
-          previewUrl: r.previewUrl,
-          artwork: r.artworkUrl100
-        })));
-      }
-    } catch (e) {
-      console.error("Music search failed", e);
-    } finally {
-      setIsSearchingMusic(false);
-    }
+  const handleEditorChange = (url: string, newEditState: any) => {
+    setMediaEdits(prev => ({
+      ...prev,
+      [url]: newEditState
+    }));
   };
 
   // Payment states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'error'>('pending');
-  const [hashLink, setHashLink] = useState("");
   const [transactionId, setTransactionId] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const [showLivePreview, setShowLivePreview] = useState(false);
-
-  // Tenor GIF Integration
-  const fallbackGifs = [
-    { id: "1", media_formats: { gif: { url: "https://media.tenor.com/L7r056m3PsoAAAAi/bubu-dudu-kiss.gif" } }, content_description: "Bubu Dudu Kiss" },
-    { id: "2", media_formats: { gif: { url: "https://media.tenor.com/978K-Y7kXGMAAAAi/bubu-dudu-love.gif" } }, content_description: "Bubu Dudu Love" },
-    { id: "3", media_formats: { gif: { url: "https://media.tenor.com/n14AymtH-JkAAAAi/bubu-dudu.gif" } }, content_description: "Bubu Dudu Happy" },
-    { id: "4", media_formats: { gif: { url: "https://media.tenor.com/7A2n2M6E2gQAAAAi/bubu-dudu-bubu.gif" } }, content_description: "Bubu Dudu Poke" },
-    { id: "5", media_formats: { gif: { url: "https://media.tenor.com/eE_IfuFqSnsAAAAi/bubu-dudu.gif" } }, content_description: "Bubu Dudu Jump" },
-    { id: "6", media_formats: { gif: { url: "https://media.tenor.com/gK9qS3eJ_CMAAAAi/bubu-dudu-hug.gif" } }, content_description: "Bubu Dudu Hug" },
-  ];
-  
-  const [gifs, setGifs] = useState<any[]>(fallbackGifs);
-  const [selectedGif, setSelectedGif] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchGifs = async () => {
-      try {
-        const res = await fetch(`https://tenor.googleapis.com/v2/search?q=bubu+dudu&key=${process.env.NEXT_PUBLIC_TENOR_API_KEY || ""}&limit=6`);
-        const data = await res.json();
-        if (data.results && data.results.length > 0) {
-          setGifs(data.results);
-        }
-      } catch(e) {
-        console.log("No API key configured, using default Bubu Dudu library");
-      }
-    };
-    fetchGifs();
-  }, []);
 
   // Issue #16 fix: this useEffect created object URLs but never used them
   // (previewUrls is populated only via the upload API response, not blob URLs).
@@ -138,7 +93,6 @@ function CreatePageContent() {
             setUploadError(`Failed to upload ${file.name}: ${data.error}`);
           }
         }
-        setFiles(prev => [...prev, ...newFiles]);
       } catch (error: any) {
         setUploadError(error.message || "Failed to upload images");
       } finally {
@@ -148,34 +102,11 @@ function CreatePageContent() {
   };
 
   const removeFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
     setPreviewUrls(prev => prev.filter((_, i) => i !== index));
     if (activeImageIndex >= index && activeImageIndex > 0) {
       setActiveImageIndex(prev => prev - 1);
     }
   };
-
-  // filters are managed by AdvancedFilterPanel
-
-  const effects = [
-    { id: 'none', name: 'Clean', icon: <Layout className="w-5 h-5 mb-2" /> },
-    { id: 'hearts', name: 'Floating Hearts', icon: <Sparkles className="w-5 h-5 mb-2 text-pink-500" /> },
-    { id: 'petals', name: 'Rose Petals', icon: <Wand2 className="w-5 h-5 mb-2 text-red-500" /> },
-    { id: 'bokeh', name: 'Bokeh Lights', icon: <Film className="w-5 h-5 mb-2 text-yellow-500" /> },
-  ];
-
-  const fonts = [
-    { id: 'elegant', name: 'Elegant Serif', class: 'font-serif' },
-    { id: 'playful', name: 'Playful Sans', class: 'font-sans' },
-    { id: 'handwriting', name: 'Romantic Script', class: 'italic' },
-  ];
-
-  const audioTracks = [
-    { id: 'piano', name: 'Soft Piano (Classic)', duration: '2:45' },
-    { id: 'acoustic', name: 'Acoustic Love', duration: '3:10' },
-    { id: 'orchestral', name: 'Cinematic Strings', duration: '2:30' },
-    { id: 'lofi', name: 'Chill Lo-Fi', duration: '2:15' },
-  ];
 
   return (
     <div className="min-h-screen bg-pink-50/50 p-4 md:p-8 relative overflow-hidden flex flex-col items-center">
@@ -188,9 +119,8 @@ function CreatePageContent() {
           <button 
             onClick={() => {
               localStorage.removeItem('proposalFormData');
-              setFormData({ partnerName: "", yourName: "", customerEmail: "", location: "", purpose: "", question: "Will you marry me?" });
+              setFormData({ partnerName: "", yourName: "", customerEmail: "", location: "", purpose: "", question: "Will you marry me?", unlocksAt: "" });
               setPreviewUrls([]);
-              setFiles([]);
               setStep(1);
             }}
             className="text-xs font-medium text-gray-500 hover:text-red-600 transition-colors px-3 py-2 rounded-lg hover:bg-red-50"
@@ -228,21 +158,32 @@ function CreatePageContent() {
                 <div className="flex justify-between items-end mb-8">
                   <div><h2 className="text-3xl font-bold text-gray-800 mb-2 font-serif">Timeline Editor 🎬</h2><p className="text-gray-500">Customize each slide with cinematic effects and captions.</p></div>
                   <label className="bg-rose-600 text-white px-8 py-3 rounded-full font-bold hover:bg-rose-700 cursor-pointer flex items-center gap-2 shadow-lg shadow-rose-200">
-                    <Plus className="w-5 h-5" /> {uploadingMedia ? "Uploading..." : "Add Photos"}
-                    <input type="file" multiple accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploadingMedia} />
+                    <Plus className="w-5 h-5" /> {uploadingMedia ? "Uploading..." : "Add Media"}
+                    <input type="file" multiple accept="image/*,video/*,audio/*" className="hidden" onChange={handleFileChange} disabled={uploadingMedia} />
                   </label>
                 </div>
                 
+                {uploadError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-bold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{uploadError}</span>
+                  </div>
+                )}
+                
                 <div className="flex-1 mb-8">
                   {previewUrls.length > 0 ? (
-                    <EditorPanel imageUrl={previewUrls[activeImageIndex]} />
+                    <EditorPanel 
+                      imageUrl={previewUrls[activeImageIndex]} 
+                      currentEdit={mediaEdits[previewUrls[activeImageIndex]]}
+                      onChange={(newEdit) => handleEditorChange(previewUrls[activeImageIndex], newEdit)}
+                    />
                   ) : (
                     <div className="flex-1 bg-gray-50 border-4 border-dashed border-gray-100 rounded-[3rem] flex flex-col items-center justify-center py-20">
                       <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-6"><ImageIcon className="w-10 h-10 text-gray-400" /></div>
                       <h4 className="text-xl font-bold text-gray-400 mb-6 uppercase tracking-widest">No Content Yet</h4>
                       <label className="cursor-pointer bg-gray-900 text-white px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-2xl">
-                         Upload First Photo
-                         <input type="file" multiple accept="image/*" onChange={handleFileChange} className="hidden" />
+                         Upload First Media
+                         <input type="file" multiple accept="image/*,video/*,audio/*" onChange={handleFileChange} className="hidden" />
                       </label>
                     </div>
                   )}
@@ -250,7 +191,7 @@ function CreatePageContent() {
                 <div className="mt-8 bg-gray-950 rounded-3xl p-6 border border-gray-800/50 flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
                   {previewUrls.map((url, i) => (
                     <div key={i} onClick={() => setActiveImageIndex(i)} className={`h-24 w-24 shrink-0 rounded-2xl overflow-hidden relative cursor-pointer group transition-all ${activeImageIndex === i ? 'ring-4 ring-pink-500 scale-110 shadow-2xl shadow-pink-500/30' : 'opacity-40 hover:opacity-100'}`}>
-                      <img src={url} className={`w-full h-full object-cover`} style={{ filter: activeFilterStyle }} />
+                      <MediaThumbnail url={url} className={`w-full h-full object-cover`} style={{ filter: activeFilterStyle }} />
                       <button onClick={(e) => {e.stopPropagation(); removeFile(i)}} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"><Trash2 className="w-3 h-3" /></button>
                       <div className="absolute bottom-2 right-2 bg-black/60 text-[8px] font-black text-white px-1.5 py-0.5 rounded uppercase tracking-tighter">Slide {i+1}</div>
                     </div>
@@ -319,21 +260,42 @@ function CreatePageContent() {
                          </div>
                       </div>
                    </div>
-                   <div className="flex flex-col">
-                      <div className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-[2.5rem] text-white flex-1 flex flex-col shadow-2xl relative overflow-hidden">
-                         <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[60px]" />
-                         <div className="flex justify-between items-start mb-10">
-                            <div><h3 className="text-2xl font-black italic">Premium 🏹</h3><p className="text-[10px] font-black text-white/40 uppercase tracking-widest mt-1">Proposal Access Pack</p></div>
-                            <span className="text-3xl font-black text-rose-500">₹99</span>
+                   <div className="flex flex-col gap-6">
+                      {/* Premium Tier */}
+                      <div onClick={() => setSelectedTier('premium')} className={`cursor-pointer p-8 rounded-[2.5rem] flex-1 flex flex-col relative overflow-hidden transition-all ${selectedTier === 'premium' ? 'bg-gradient-to-br from-gray-900 to-black text-white shadow-2xl scale-105 border-2 border-rose-500' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}>
+                         {selectedTier === 'premium' && <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/20 rounded-full blur-[60px]" />}
+                         <div className="flex justify-between items-start mb-6">
+                            <div>
+                               <h3 className={`text-2xl font-black italic ${selectedTier === 'premium' ? 'text-white' : 'text-gray-900'}`}>Premium 🏹</h3>
+                               <p className="text-[10px] font-black uppercase tracking-widest mt-1 opacity-60">The Full Experience</p>
+                            </div>
+                            <span className={`text-3xl font-black ${selectedTier === 'premium' ? 'text-rose-500' : 'text-gray-900'}`}>₹199</span>
                          </div>
-                         <div className="space-y-4 mb-10">
-                            {[ 'Secure Forever Link', 'Limited: 2 Opens', 'Custom Watermark', 'High-Res CDN Render', 'Instant Verification' ].map((f, i) => (
-                              <div key={i} className="flex items-center gap-3 text-xs font-medium text-white/80"><Check className="w-4 h-4 text-emerald-400" /> {f}</div>
+                         <div className="space-y-4 mb-8">
+                            {[ 'Video & Voice Support', '10 Views Limit', 'Scheduled Delivery', 'Custom Watermark', 'Priority Support' ].map((f, i) => (
+                              <div key={i} className="flex items-center gap-3 text-xs font-medium opacity-80"><Check className="w-4 h-4 text-emerald-400" /> {f}</div>
                             ))}
                          </div>
-                         <div className="mt-auto space-x-4 flex">
-                           <button onClick={() => setShowLivePreview(true)} className="flex-1 bg-white/10 hover:bg-white/20 text-white font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition-all flex items-center justify-center gap-2">Preview link</button>
+                      </div>
+                      
+                      {/* Basic Tier */}
+                      <div onClick={() => setSelectedTier('basic')} className={`cursor-pointer p-8 rounded-[2.5rem] flex-1 flex flex-col relative overflow-hidden transition-all ${selectedTier === 'basic' ? 'bg-gradient-to-br from-gray-900 to-black text-white shadow-2xl scale-105 border-2 border-rose-500' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}>
+                         <div className="flex justify-between items-start mb-6">
+                            <div>
+                               <h3 className={`text-2xl font-black italic ${selectedTier === 'basic' ? 'text-white' : 'text-gray-900'}`}>Basic 💌</h3>
+                               <p className="text-[10px] font-black uppercase tracking-widest mt-1 opacity-60">Simple & Sweet</p>
+                            </div>
+                            <span className={`text-3xl font-black ${selectedTier === 'basic' ? 'text-rose-500' : 'text-gray-900'}`}>₹99</span>
                          </div>
+                         <div className="space-y-4 mb-8">
+                            {[ 'Photo Uploads Only', '2 Views Limit', 'Standard Template', 'Instant Verification' ].map((f, i) => (
+                              <div key={i} className="flex items-center gap-3 text-xs font-medium opacity-80"><Check className="w-4 h-4 text-emerald-400" /> {f}</div>
+                            ))}
+                         </div>
+                      </div>
+
+                      <div className="mt-2 space-x-4 flex">
+                        <button onClick={() => setShowLivePreview(true)} className="flex-1 bg-gray-900 hover:bg-black text-white font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xl">Preview link</button>
                       </div>
                    </div>
                 </div>
@@ -342,7 +304,7 @@ function CreatePageContent() {
                   onClick={() => { setShowPaymentModal(true); setPaymentStatus('pending'); setPaymentError(''); }}
                   className="bg-rose-600 text-white px-20 py-6 rounded-full font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(225,29,72,0.3)] flex items-center gap-4 group"
                 >
-                  Pay ₹99 & Lock Link <ArrowLeft className="rotate-180 w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                  Pay ₹{selectedTier === 'premium' ? '199' : '99'} & Lock Link <ArrowLeft className="rotate-180 w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
                 <button onClick={() => setStep(3)} className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-800 transition-colors">Wait, I want to edit more</button>
                 </div>
@@ -392,13 +354,46 @@ function CreatePageContent() {
                             if (!formData.customerEmail) { setPaymentError("Email is required"); return; }
                             setPaymentStatus('processing');
                             try {
-                               const saveRes = await fetch('/api/proposals/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ yourName: formData.yourName, partnerName: formData.partnerName, customerEmail: formData.customerEmail, question: formData.question, mediaUrls: previewUrls, musicTrack: selectedTrack, effectType: selectedEffect, filterType: activeFilterStyle, fontStyle: selectedFont }) });
+                               const saveRes = await fetch('/api/proposals/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ yourName: formData.yourName, partnerName: formData.partnerName, customerEmail: formData.customerEmail, question: formData.question, mediaUrls: previewUrls, mediaEdits: mediaEdits, musicTrack: selectedTrack, effectType: selectedEffect, filterType: activeFilterStyle, fontStyle: selectedFont, unlocksAt: formData.unlocksAt ? new Date(formData.unlocksAt).toISOString() : null, planType: selectedTier }) });
                                const saveData = await saveRes.json();
                                if (!saveRes.ok) { setPaymentError(saveData.error || "Save Failed"); setPaymentStatus('error'); return; }
                                setGeneratedToken(saveData.proposal?.token || "");
-                               const payRes = await fetch('/api/payment/create-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: 99, planType: 'premium', customerName: formData.yourName, customerEmail: formData.customerEmail, partnerName: formData.partnerName, transactionId: saveData.proposal?.transactionId, proposalId: saveData.proposal?.id }) });
+                               const payRes = await fetch('/api/payment/create-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: selectedTier === 'premium' ? 199 : 99, planType: selectedTier, customerName: formData.yourName, customerEmail: formData.customerEmail, partnerName: formData.partnerName, transactionId: saveData.proposal?.transactionId, proposalId: saveData.proposal?.id }) });
                                const data = await payRes.json();
-                               if (payRes.ok && data.success) { setTransactionId(data.transactionId || saveData.proposal?.transactionId); setPaymentStatus('success'); } else { setPaymentError(data.message || "Order Error"); setPaymentStatus('error'); }
+                               if (payRes.ok && data.success) { 
+                                 setTransactionId(data.transactionId || saveData.proposal?.transactionId); 
+                                 
+                                 // Razorpay Flow
+                                 if (data.razorpayEnabled && data.razorpayOrderId) {
+                                    const script = document.createElement('script');
+                                    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                                    script.onload = () => {
+                                      const options = {
+                                        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
+                                        amount: (selectedTier === 'premium' ? 199 : 99) * 100,
+                                        currency: "INR",
+                                        name: "Purpose Proposals",
+                                        description: "Premium Link Access",
+                                        order_id: data.razorpayOrderId,
+                                        handler: function (_response: any) {
+                                           setPaymentStatus('success');
+                                        },
+                                        prefill: { name: formData.yourName, email: formData.customerEmail },
+                                        theme: { color: "#e11d48" }
+                                      };
+                                      const rzp = new (window as any).Razorpay(options);
+                                      rzp.on('payment.failed', function (response: any) {
+                                         setPaymentError(response.error.description);
+                                         setPaymentStatus('error');
+                                      });
+                                      rzp.open();
+                                    };
+                                    document.body.appendChild(script);
+                                 } else {
+                                   // Fallback Mock Flow
+                                   setPaymentStatus('success'); 
+                                 }
+                               } else { setPaymentError(data.message || "Order Error"); setPaymentStatus('error'); }
                             } catch (err: any) { setPaymentError(err.message || "Conn Error"); setPaymentStatus('error'); }
                           }}
                           className="w-full bg-gray-900 text-white py-6 rounded-[1.5rem] font-black hover:bg-black shadow-[0_20px_40px_rgba(0,0,0,0.2)] active:scale-95 transition-all text-xl flex items-center justify-center gap-4 group"
@@ -425,7 +420,24 @@ function CreatePageContent() {
                      
                      {/* SHAREABLE LINK BOX */}
                      <div className="w-full max-w-2xl bg-gray-50 border-2 border-dashed border-emerald-200 p-8 rounded-[2.5rem] mb-12">
-                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">Secret Memory Link</p>
+                        
+                        {/* MASSIVE WHATSAPP SHARE BUTTON */}
+                        <div className="mb-8">
+                           <button 
+                             onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Hi, I have a secret for you... 🏹\n\nOpen here: https://purpose.site/secret/${generatedToken}`)}`, '_blank')}
+                             className="w-full bg-[#25D366] text-white py-6 rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-[0_20px_50px_rgba(37,211,102,0.4)] flex items-center justify-center gap-4"
+                           >
+                             <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="css-i6dzq1"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                             Send Direct via WhatsApp 🚀
+                           </button>
+                        </div>
+
+                        <div className="flex items-center gap-4 mb-4">
+                           <div className="flex-1 h-px bg-gray-200" />
+                           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Or copy manually</span>
+                           <div className="flex-1 h-px bg-gray-200" />
+                        </div>
+
                         <div className="bg-white p-4 rounded-2xl border border-emerald-100 flex items-center justify-between gap-4 shadow-inner">
                            <p className="text-sm font-mono font-bold text-gray-700 truncate">https://purpose.site/secret/{generatedToken}</p>
                            <button 
@@ -433,18 +445,8 @@ function CreatePageContent() {
                                navigator.clipboard.writeText(`https://purpose.site/secret/${generatedToken}`);
                                alert("Link Copied! 💘");
                              }}
-                             className="bg-emerald-500 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg hover:bg-emerald-600 transition-all"
+                             className="bg-gray-900 text-white px-6 py-3 rounded-xl text-xs font-black uppercase shadow-lg hover:bg-black transition-all"
                            >Copy</button>
-                        </div>
-                        <div className="mt-8 flex flex-wrap gap-4 justify-center">
-                           <button 
-                             onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Hi, I have a secret for you... 🏹\n\nOpen here: https://purpose.site/secret/${generatedToken}`)}`, '_blank')}
-                             className="bg-[#25D366] text-white px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl flex items-center gap-2"
-                           >WhatsApp Share</button>
-                           <button 
-                             onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://purpose.site/secret/${generatedToken}`)}`, '_blank')}
-                             className="bg-[#0077b5] text-white px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl flex items-center gap-2"
-                           >LinkedIn Share</button>
                         </div>
                      </div>
 
@@ -499,7 +501,7 @@ function CreatePageContent() {
                   <div className="w-full h-full relative snap-y snap-mandatory overflow-y-scroll overflow-x-hidden custom-scrollbar scroll-smooth">
                      {previewUrls.map((url, i) => (
                        <div key={i} className="snap-start h-screen w-full relative flex items-center justify-center overflow-hidden">
-                          <img src={url} className="absolute inset-0 w-full h-full object-cover opacity-50 scale-110" style={{ filter: activeFilterStyle }} />
+                          <MediaThumbnail url={url} className="absolute inset-0 w-full h-full object-cover opacity-50 scale-110" style={{ filter: activeFilterStyle }} />
                           
                           {/* VFX Layer Preview */}
                           {selectedEffect === 'hearts' && (

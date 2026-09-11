@@ -53,8 +53,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── View limit reached ────────────────────────────────────────────────
-    if (link.currentViews >= link.maxViews) {
+    // ── Atomic check and increment ───────────────────────────────────────
+    const updatedCount = await prisma.secretLink.updateMany({
+      where: { 
+        id: link.id,
+        currentViews: { lt: link.maxViews }
+      },
+      data: {
+        currentViews: { increment: 1 },
+      },
+    });
+
+    if (updatedCount.count === 0) {
       await prisma.secretLink.updateMany({
         where: { id: link.id, isActive: true },
         data: { isActive: false },
@@ -65,6 +75,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Fetch the updated link state to return correct data
+    const updated = await prisma.secretLink.findUnique({
+      where: { id: link.id }
+    });
+
+    if (!updated) {
+      return NextResponse.json(
+        { allowed: false, expired: false, reason: "not-found" },
+        { status: 404 }
+      );
+    }
+
     // ── Collect request metadata ──────────────────────────────────────────
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -72,18 +94,13 @@ export async function POST(req: NextRequest) {
       "unknown";
     const userAgent = req.headers.get("user-agent") || "unknown";
 
-    // ── Atomic increment + access log ────────────────────────────────────
-    const updated = await prisma.secretLink.update({
-      where: { id: link.id },
+    // ── Access log ───────────────────────────────────────────────────────
+    await prisma.accessLog.create({
       data: {
-        currentViews: { increment: 1 },
-        accessLog: {
-          create: {
-            ipAddress: ip.substring(0, 45),
-            userAgent: userAgent.substring(0, 500),
-            viewNumber: link.currentViews + 1,
-          },
-        },
+        secretLinkId: updated.id,
+        ipAddress: ip.substring(0, 45),
+        userAgent: userAgent.substring(0, 500),
+        viewNumber: updated.currentViews,
       },
     });
 
@@ -118,6 +135,7 @@ export async function POST(req: NextRequest) {
         currentViews: updated.currentViews,
         maxViews:     updated.maxViews,
         expiresAt:    updated.expiresAt,
+        unlocksAt:    (updated as any).unlocksAt,
         planType:     updated.planType,
         isActive:     updated.isActive,
       },

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { Home, Sparkles, LayoutDashboard, Settings, Heart, Lock, Lightbulb, Mail, Wand2 } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Home, LayoutDashboard, Settings, Heart, Lightbulb, Mail, Wand2, User } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import LanguageToggle from "@/components/LanguageToggle";
 
@@ -15,7 +15,6 @@ export default function Navbar() {
 
   const scrollY = useScroll().scrollY;
   const pathname = usePathname();
-  const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -38,6 +37,7 @@ export default function Navbar() {
   const navLinks = [
     { name: t("nav_home"), path: "/", icon: <Home className="w-4 h-4" /> },
     { name: t("nav_templates"), path: "/templates", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { name: "Dashboard", path: "/dashboard", icon: <User className="w-4 h-4" /> },
     { name: t("nav_ideas"), path: "/ideas", icon: <Lightbulb className="w-4 h-4" /> },
     { name: t("nav_custom"), path: "/custom-request", icon: <Mail className="w-4 h-4" /> },
     ...(isAdmin ? [{ name: t("nav_admin"), path: "/admin", icon: <Settings className="w-4 h-4" /> }] : []),
@@ -98,9 +98,19 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Language Toggle & CTA Button */}
+          {/* Language Toggle & Actions */}
           <div className="ml-2 flex items-center gap-2">
             <LanguageToggle />
+            <Link
+              href="/login"
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                pathname === "/login"
+                  ? "bg-rose-100 text-rose-700"
+                  : "text-gray-600 hover:text-rose-600 hover:bg-rose-50"
+              }`}
+            >
+              Login
+            </Link>
             <Link
               href="/create"
               className="flex items-center gap-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold text-sm shadow-md shadow-rose-300/40 hover:shadow-rose-400/50 hover:scale-105 active:scale-95 transition-all duration-200"

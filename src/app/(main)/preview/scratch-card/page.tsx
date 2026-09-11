@@ -9,12 +9,10 @@ export default function ScratchCardReveal() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScratched, setIsScratched] = useState(false);
-  const [percentScratched, setPercentScratched] = useState(0);
   const [started, setStarted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Scratch Drawing variables
-  let isDrawing = false;
+  const isDrawing = useRef(false);
 
   useEffect(() => {
     audioRef.current = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_79ce32edbd.mp3");
@@ -64,14 +62,14 @@ export default function ScratchCardReveal() {
     };
 
     const handleStart = (e: MouseEvent | TouchEvent) => {
-      isDrawing = true;
+      isDrawing.current = true;
       const { x, y } = getMousePos(e);
       ctx.beginPath();
       ctx.moveTo(x, y);
     };
 
     const handleMove = (e: MouseEvent | TouchEvent) => {
-      if (!isDrawing) return;
+      if (!isDrawing.current) return;
       e.preventDefault(); // Prevent scrolling while scratching
       const { x, y } = getMousePos(e);
       ctx.lineTo(x, y);
@@ -83,7 +81,7 @@ export default function ScratchCardReveal() {
       }
     };
 
-    const handleEnd = () => { isDrawing = false; };
+    const handleEnd = () => { isDrawing.current = false; };
 
     const checkScratchPercent = () => {
        const pixels = ctx.getImageData(0, 0, width, height).data;
@@ -92,7 +90,6 @@ export default function ScratchCardReveal() {
            if (pixels[i] === 0) transparentPixels++;
        }
        const clearPercentage = (transparentPixels / (pixels.length / 4)) * 100;
-       setPercentScratched(clearPercentage);
 
        if (clearPercentage > 50 && !isScratched) {
            setIsScratched(true);

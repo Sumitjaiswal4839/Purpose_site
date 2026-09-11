@@ -76,14 +76,15 @@ const PreviewPanel: React.FC<Props> = ({
         />
 
         <div className="relative w-full h-full flex items-center justify-center">
-          <motion.img 
-            initial={false}
-            animate={{ scale: 1 }}
-            src={imageUrl} 
-            alt="Preview" 
-            className="max-h-full max-w-full object-contain rounded-xl shadow-2xl z-10"
-            style={style}
-          />
+          {(() => {
+            const isVid = imageUrl.match(/\.(mp4|webm|ogg)$/i) || imageUrl.includes('/video/upload/');
+            const isAud = imageUrl.match(/\.(mp3|wav|ogg|mpeg)$/i) || (imageUrl.includes('/video/upload/') && imageUrl.includes('audio'));
+            const cName = "max-h-full max-w-full object-contain rounded-xl shadow-2xl z-10";
+            
+            if (isVid) return <motion.video initial={false} animate={{ scale: 1 }} src={imageUrl} className={cName} style={style as any} autoPlay loop muted playsInline />;
+            if (isAud) return <motion.div initial={false} animate={{ scale: 1 }} className={`flex items-center justify-center bg-gray-900 min-w-[250px] min-h-[150px] ${cName}`} style={style as any}><audio src={imageUrl} controls /></motion.div>;
+            return <motion.img initial={false} animate={{ scale: 1 }} src={imageUrl} alt="Preview" className={cName} style={style} />;
+          })()}
 
           <AnimatePresence>
             {!showOriginal && textOverlay && (

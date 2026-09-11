@@ -23,6 +23,7 @@ interface ProposalData {
   currentViews: number;
   maxViews: number;
   expiresAt: string;
+  unlocksAt?: string;
 }
 
 // Move YesNoButtons OUTSIDE component
@@ -168,8 +169,19 @@ export default function SecretClientPage({
     audioRef.current?.play().catch(() => {});
   };
 
-  const handleYes = () => {
+  const handleYes = async () => {
     setAccepted(true);
+    
+    try {
+      await fetch('/api/links/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, response: 'yes' }),
+      });
+    } catch (error) {
+      console.error('Failed to save response:', error);
+    }
+
     const end = Date.now() + 6000;
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
     const rng = (min: number, max: number) => Math.random() * (max - min) + min;
@@ -237,6 +249,27 @@ export default function SecretClientPage({
             Create New Memory
           </Link>
         </motion.div>
+      </div>
+    );
+  }
+
+  // ── Scheduled Delivery Countdown ──────────────────────────────────
+  if (proposalData?.unlocksAt && new Date() < new Date(proposalData.unlocksAt)) {
+    const unlocksAtDate = new Date(proposalData.unlocksAt);
+    return (
+      <div className="min-h-screen bg-rose-950 flex flex-col items-center justify-center text-center p-6 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+        <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 animate-pulse backdrop-blur-xl border border-white/20">
+          <Clock className="w-10 h-10 text-rose-300" />
+        </div>
+        <h1 className="text-4xl md:text-5xl font-black text-white mb-4 italic tracking-tighter">Not Yet... 🕰️</h1>
+        <p className="text-rose-200/80 mb-8 max-w-md font-medium text-lg leading-relaxed">
+          {proposalData.yourName} scheduled this secret memory to unlock on <br/>
+          <span className="font-bold text-white mt-2 block">{unlocksAtDate.toLocaleString()}</span>
+        </p>
+        <button onClick={() => window.location.reload()} className="bg-white/10 border border-white/20 text-white px-8 py-3 rounded-full font-black text-sm hover:bg-white/20 transition-all">
+          Check Again
+        </button>
       </div>
     );
   }
@@ -337,13 +370,16 @@ export default function SecretClientPage({
 
                   return (
                     <div key={i} className="snap-start h-screen w-full relative flex items-center justify-center overflow-hidden">
-                      <Image 
-                        src={url} 
-                        alt={`Memory ${i}`} 
-                        fill
-                        className="absolute inset-0 w-full h-full object-cover scale-110" 
-                        style={{ filter: proposalData.filterType || "" }}
-                      />
+                      {(() => {
+                        const isVid = url.match(/\.(mp4|webm|ogg)$/i) || url.includes('/video/upload/');
+                        const isAud = url.match(/\.(mp3|wav|ogg|mpeg)$/i) || (url.includes('/video/upload/') && url.includes('audio'));
+                        const className = "absolute inset-0 w-full h-full object-cover scale-110";
+                        const style = { filter: proposalData.filterType || "" };
+                        
+                        if (isVid) return <video src={url} className={className} style={style} autoPlay loop muted playsInline />;
+                        if (isAud) return <div className={`flex items-center justify-center bg-gray-900 ${className}`} style={style}><Volume2 className="w-16 h-16 text-white" /></div>;
+                        return <Image src={url} alt={`Memory ${i}`} fill className={className} style={style} />;
+                      })()}
                       {proposalData.effectType === "hearts" && <div className="absolute inset-0 z-20 pointer-events-none opacity-40 bg-[url('https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif')] bg-cover mix-blend-screen scale-125" />}
                       {proposalData.effectType === "petals" && <div className="absolute inset-0 z-20 pointer-events-none opacity-30 bg-[url('https://media.giphy.com/media/l41lTfJvP2uX7O5tC/giphy.gif')] bg-cover mix-blend-screen scale-150" />}
                       <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-gradient-to-t from-black/90 via-transparent to-black/60 p-12 text-center">

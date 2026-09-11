@@ -33,6 +33,8 @@ export async function POST(request: Request) {
       effectType,
       filterType,
       fontStyle,
+      unlocksAt,
+      planType = 'premium',
     } = body;
 
     if (!yourName || !partnerName || !customerEmail) {
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
     const token = generateSecureToken();
     const transactionId = `TXN_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const isPremium = planType === 'premium';
 
     // ── Create proposal — let Prisma manage createdAt/updatedAt ──────────
     const proposal = await prisma.secretLink.create({
@@ -62,14 +65,15 @@ export async function POST(request: Request) {
         effectType: effectType || null,
         filterType: filterType || null,
         fontStyle: fontStyle || null,
-        maxViews: 2,
+        unlocksAt: unlocksAt ? new Date(unlocksAt) : null,
+        maxViews: isPremium ? 10 : 2,
         currentViews: 0,
         isActive: false,
         expiresAt,
         paymentStatus: "pending",
-        planType: "premium",
-        paymentAmount: 99,
-      },
+        planType: isPremium ? "premium" : "basic",
+        paymentAmount: isPremium ? 199 : 99,
+      } as any,
     });
 
     // ── Generate verification token for admin email ───────────────────────

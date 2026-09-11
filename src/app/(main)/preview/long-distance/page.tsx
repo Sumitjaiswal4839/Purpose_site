@@ -26,7 +26,7 @@ export default function LongDistanceTheme() {
     const y = Math.random() * 200 - 100;
     return {
       transform: `translate(${x}px, ${y}px)`,
-      position: "relative" as "relative",
+      position: "relative" as const,
     };
   };
 

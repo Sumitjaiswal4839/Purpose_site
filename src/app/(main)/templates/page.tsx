@@ -27,6 +27,21 @@ export default function TemplatesPage() {
 
   const themes = [
     {
+      title: "Classic Interactive Proposal",
+      category: "love",
+      description: "Our signature original proposal theme with evasive 'No' button physics, heartfelt message, and confetti explosion.",
+      icon: <Heart className="w-6 h-6 text-rose-500" />,
+      color: "from-rose-500 to-red-600",
+      bgClass: "bg-rose-50",
+      imageUrl: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=800",
+      premium: false,
+      price: 0,
+      badge: "ORIGINAL",
+      rating: 4.9,
+      usedCount: 22000,
+      href: "/preview"
+    },
+    {
       title: "Secret Scratch Card",
       category: "fun",
       description: "Literally scratch the smartphone screen with your finger to reveal a deep hidden memory underneath.",
@@ -97,21 +112,7 @@ export default function TemplatesPage() {
       usedCount: 4100,
       href: "/preview/friendzone"
     },
-    {
-      title: "Valentine Special",
-      category: "love",
-      description: "The grand gesture. Includes falling rose petals, cinematic typography, and candlelight glow.",
-      icon: <Sparkles className="w-6 h-6 text-red-600" />,
-      color: "from-red-500 to-rose-700",
-      bgClass: "bg-red-50",
-      imageUrl: "https://images.unsplash.com/photo-1549471013-3364d7220b75",
-      premium: true,
-      price: 99,
-      badge: "TRENDING",
-      rating: 4.9,
-      usedCount: 5600,
-      href: "/preview/valentine"
-    },
+
     {
       title: "Long Distance Love",
       category: "love",
@@ -295,36 +296,7 @@ export default function TemplatesPage() {
       usedCount: 450,
       href: "/preview/sorry"
     },
-    {
-      title: "The Ultimate Prank 😈",
-      category: "fun",
-      description: "Starts like a beautiful romantic proposal but mid-way plays a hilarious meme or jumpscare.",
-      icon: <Sparkles className="w-6 h-6 text-orange-600" />,
-      color: "from-orange-500 to-red-600",
-      bgClass: "bg-orange-50",
-      imageUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800",
-      premium: true,
-      price: 149,
-      badge: "FUN",
-      rating: 5.0,
-      usedCount: 890,
-      href: "/preview/prank"
-    },
-    {
-      title: "Corporate Farewell",
-      category: "friends",
-      description: "A digital memory book for colleagues. Professional yet touching timeline of project wins and team photos.",
-      icon: <Coffee className="w-6 h-6 text-slate-500" />,
-      color: "from-slate-400 to-slate-600",
-      bgClass: "bg-slate-50",
-      imageUrl: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=800",
-      premium: true,
-      price: 199,
-      badge: "PRO",
-      rating: 4.7,
-      usedCount: 320,
-      href: "/preview/farewell"
-    }
+
   ];
 
   const filteredThemes = themes.filter(t => {

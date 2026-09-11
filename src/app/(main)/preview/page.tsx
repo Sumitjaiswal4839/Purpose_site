@@ -23,7 +23,7 @@ export default function PreviewPage() {
     
     return {
       transform: `translate(${x}px, ${y}px)`,
-      position: "relative" as "relative",
+      position: "relative" as const,
     };
   };
 

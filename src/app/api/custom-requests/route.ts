@@ -12,7 +12,7 @@ import { sendNotificationEmail } from "../notify/route";
 
 export async function GET(request: NextRequest) {
   // Issue #7 fix: this endpoint returns PII (names, emails, phones). Auth required.
-  if (!isAdminRequest(request)) {
+  if (!(await isAdminRequest(request))) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,13 +1,14 @@
 import crypto from "crypto";
 import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 const SECRET = process.env.JWT_SECRET;
 
-if (!SECRET && process.env.NODE_ENV === "production") {
-  throw new Error("JWT_SECRET must be set in production");
+if (!SECRET) {
+  throw new Error("JWT_SECRET must be set. Refusing to start without it.");
 }
 
-const SIGNING_SECRET = SECRET || "dev-only-fallback-do-not-use-in-prod";
+const SIGNING_SECRET = SECRET;
 const TOKEN_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 function sign(payload: string): string {
@@ -22,11 +23,9 @@ export function generateAdminToken(username: string): string {
   return `${payloadB64}.${signature}`;
 }
 
-/** Verifies a signed admin token: checks signature + expiry + exact username match */
-export function verifyAdminToken(token: string | null): boolean {
+/** Verifies a signed admin token: checks signature, expiry, and db existence */
+export async function verifyAdminToken(token: string | null): Promise<boolean> {
   if (!token) return false;
-  const adminUsername = process.env.ADMIN_USERNAME;
-  if (!adminUsername) return false;
 
   const [payloadB64, signature] = token.split(".");
   if (!payloadB64 || !signature) return false;
@@ -46,15 +45,34 @@ export function verifyAdminToken(token: string | null): boolean {
   if (!sigMatch) return false;
 
   const [username, expiryStr] = payload.split(":");
-  if (username !== adminUsername) return false; // exact match, not startsWith/includes
   if (Date.now() > Number(expiryStr)) return false; // expired
+
+  // Ensure admin still exists and is active in DB
+  try {
+    const adminUser = await prisma.admin.findUnique({
+      where: { username }
+    });
+    if (!adminUser) return false;
+  } catch (err) {
+    console.error("verifyAdminToken db error:", err);
+    return false; // Fail safe
+  }
 
   return true;
 }
 
+export async function getAdminUsernameFromToken(token: string | null): Promise<string | null> {
+  const isValid = await verifyAdminToken(token);
+  if (!isValid) return null;
+  const [payloadB64] = token!.split(".");
+  const payload = Buffer.from(payloadB64, "base64url").toString("utf8");
+  const [username] = payload.split(":");
+  return username;
+}
+
 /** Helper to extract + verify token from a Next.js request */
-export function isAdminRequest(req: NextRequest): boolean {
+export async function isAdminRequest(req: NextRequest): Promise<boolean> {
   const authHeader = req.headers.get("x-admin-token") || req.headers.get("authorization");
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
-  return verifyAdminToken(token);
+  return await verifyAdminToken(token);
 }

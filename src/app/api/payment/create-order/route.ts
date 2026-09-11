@@ -15,7 +15,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       amount,
-      planType,
       customerName,
       customerEmail,
       partnerName,
@@ -46,6 +45,29 @@ export async function POST(req: Request) {
       );
     }
 
+    let razorpayOrderId = null;
+    let razorpayEnabled = false;
+
+    if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const Razorpay = require("razorpay");
+        const rzp = new Razorpay({
+          key_id: process.env.RAZORPAY_KEY_ID,
+          key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
+        const order = await rzp.orders.create({
+          amount: amount * 100,
+          currency: "INR",
+          receipt: proposal.transactionId,
+        });
+        razorpayOrderId = order.id;
+        razorpayEnabled = true;
+      } catch (err) {
+        console.warn("[create-order] Razorpay error, falling back to mock:", err);
+      }
+    }
+
     // ── Fire admin notification (non-blocking — never crash on email failure) ──
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://purpose.site";
     fetch(`${appUrl}/api/notify`, {
@@ -63,9 +85,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "Payment request logged. Admin will verify shortly.",
+      message: "Payment request logged.",
       transactionId: proposal.transactionId,
       proposalToken: proposal.token,
+      razorpayOrderId,
+      razorpayEnabled,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

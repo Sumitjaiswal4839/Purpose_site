@@ -5,6 +5,36 @@ import { motion } from "framer-motion";
 import { Heart, Sparkles } from "lucide-react";
 import Link from "next/link";
 
+// Butterfly SVG component for animation
+const Butterfly = ({ delay, xOffset }: { delay: number; xOffset: number }) => (
+  <motion.div
+    initial={{ y: "110vh", x: xOffset, opacity: 0, scale: 0.5 }}
+    animate={{ 
+      y: "-10vh", 
+      x: [xOffset, xOffset + 50, xOffset - 50, xOffset],
+      opacity: [0, 1, 1, 0],
+      scale: [0.5, 1, 1.2, 0.8]
+    }}
+    transition={{ duration: 15, delay: delay, repeat: Infinity, ease: "linear" }}
+    className="absolute z-0 pointer-events-none"
+  >
+    <svg width="40" height="40" viewBox="0 0 100 100" className="drop-shadow-lg opacity-60">
+      <motion.path 
+        animate={{ scaleX: [1, 0.2, 1] }}
+        transition={{ duration: 0.3, repeat: Infinity, ease: "easeInOut" }}
+        d="M50 50 C 20 0, 0 30, 48 50 C 0 70, 20 100, 50 50 C 80 100, 100 70, 52 50 C 100 30, 80 0, 50 50" 
+        fill="url(#butterflyGrad)"
+      />
+      <defs>
+        <linearGradient id="butterflyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f43f5e" />
+          <stop offset="100%" stopColor="#fb7185" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </motion.div>
+);
+
 export default function CrushTheme() {
   const [isAccepted, setIsAccepted] = useState(false);
   const [noHoverCount, setNoHoverCount] = useState(0);
@@ -15,39 +45,9 @@ export default function CrushTheme() {
     const y = Math.random() * 200 - 100;
     return {
       transform: `translate(${x}px, ${y}px)`,
-      position: "relative" as "relative",
+      position: "relative" as const,
     };
   };
-
-  // Butterfly SVG component for animation
-  const Butterfly = ({ delay, xOffset }: { delay: number, xOffset: number }) => (
-    <motion.div
-      initial={{ y: "110vh", x: xOffset, opacity: 0, scale: 0.5 }}
-      animate={{ 
-        y: "-10vh", 
-        x: [xOffset, xOffset + 50, xOffset - 50, xOffset],
-        opacity: [0, 1, 1, 0],
-        scale: [0.5, 1, 1.2, 0.8]
-      }}
-      transition={{ duration: 15, delay: delay, repeat: Infinity, ease: "linear" }}
-      className="absolute z-0 pointer-events-none"
-    >
-      <svg width="40" height="40" viewBox="0 0 100 100" className="drop-shadow-lg opacity-60">
-        <motion.path 
-          animate={{ scaleX: [1, 0.2, 1] }}
-          transition={{ duration: 0.3, repeat: Infinity, ease: "easeInOut" }}
-          d="M50 50 C 20 0, 0 30, 48 50 C 0 70, 20 100, 50 50 C 80 100, 100 70, 52 50 C 100 30, 80 0, 50 50" 
-          fill="url(#butterflyGrad)"
-        />
-        <defs>
-          <linearGradient id="butterflyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f43f5e" />
-            <stop offset="100%" stopColor="#fb7185" />
-          </linearGradient>
-        </defs>
-      </svg>
-    </motion.div>
-  );
 
   return (
     <div className="min-h-screen bg-rose-50 flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">

@@ -12,18 +12,40 @@ import PreviewPanel from "./PreviewPanel";
 
 interface Props {
   imageUrl: string;
+  currentEdit?: {
+    brightness: number;
+    contrast: number;
+    filter: string;
+  };
+  onChange?: (newEdit: { brightness: number; contrast: number; filter: string }) => void;
 }
 
-const EditorPanel: React.FC<Props> = ({ imageUrl }) => {
-  const [brightness, setBrightness] = useState(100);
-  const [contrast, setContrast] = useState(100);
+const EditorPanel: React.FC<Props> = ({ imageUrl, currentEdit, onChange }) => {
+  const [brightness, setBrightness] = useState(currentEdit?.brightness ?? 100);
+  const [contrast, setContrast] = useState(currentEdit?.contrast ?? 100);
   const [saturation, setSaturation] = useState(100);
   const [rotation, setRotation] = useState(0);
   const [textOverlay, setTextOverlay] = useState("");
   const [stickers, setStickers] = useState<string[]>([]);
-  const [filter, setFilter] = useState("Original");
+  const [filter, setFilter] = useState(currentEdit?.filter ?? "Original");
   const [showOriginal, setShowOriginal] = useState(false);
   const [activeTab, setActiveTab] = useState<"adjust" | "filter" | "frame" | "extra">("adjust");
+
+  React.useEffect(() => {
+    onChange?.({ brightness, contrast, filter });
+  }, [brightness, contrast, filter]);
+
+  React.useEffect(() => {
+    if (currentEdit) {
+      setBrightness(currentEdit.brightness);
+      setContrast(currentEdit.contrast);
+      setFilter(currentEdit.filter);
+    } else {
+      setBrightness(100);
+      setContrast(100);
+      setFilter("Original");
+    }
+  }, [imageUrl]);
 
   const autoEnhance = () => {
     setBrightness(115);

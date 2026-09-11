@@ -11,7 +11,7 @@ import { isAdminRequest } from "@/lib/adminAuth";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!isAdminRequest(req)) {
+    if (!(await isAdminRequest(req))) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    const requests = dbRequests.map((r) => {
+    const requests = dbRequests.map((r: any) => {
       let extra: Record<string, string> = {
         forWhom: "",
         theme: "",
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
         try {
           extra = { ...extra, ...JSON.parse(r.notes) };
         } catch {
-          r.description.split("\n").forEach((line) => {
+          r.description.split("\n").forEach((line: string) => {
             if (line.startsWith("For: "))     extra.forWhom = line.slice(5);
             if (line.startsWith("Theme: "))   extra.theme   = line.slice(7);
             if (line.startsWith("Special: ")) extra.special = line.slice(9);
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    if (!isAdminRequest(req)) {
+    if (!(await isAdminRequest(req))) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 

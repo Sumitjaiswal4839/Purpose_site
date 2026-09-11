@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User, Heart, Mail, Sparkles, AlertCircle } from "lucide-react";
+import { User, Heart, Mail, Sparkles, AlertCircle, Clock } from "lucide-react";
 
 interface BasicsFormProps {
   formData: {
@@ -15,6 +15,7 @@ interface BasicsFormProps {
 const BasicsForm: React.FC<BasicsFormProps> = ({ formData, updateFormData, onNext }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [consentGiven, setConsentGiven] = useState(false);
 
   const validate = (data: typeof formData) => {
     const e: Record<string, string> = {};
@@ -42,9 +43,10 @@ const BasicsForm: React.FC<BasicsFormProps> = ({ formData, updateFormData, onNex
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const allTouched = { yourName: true, partnerName: true, customerEmail: true };
+    const allTouched = { yourName: true, partnerName: true, customerEmail: true, consent: true };
     setTouched(allTouched);
     const errs = validate(formData);
+    if (!consentGiven) errs.consent = "You must agree to the privacy policy and data collection terms to proceed.";
     setErrors(errs);
     if (Object.keys(errs).length === 0) onNext();
   };
@@ -77,6 +79,13 @@ const BasicsForm: React.FC<BasicsFormProps> = ({ formData, updateFormData, onNex
       placeholder: "e.g. Marriage proposal, Birthday wish...",
       icon: <Sparkles className="w-5 h-5" />,
       type: "text",
+    },
+    {
+      name: "unlocksAt",
+      label: "Scheduled Delivery (Optional)",
+      placeholder: "",
+      icon: <Clock className="w-5 h-5 text-indigo-400" />,
+      type: "datetime-local",
     },
   ];
 
@@ -137,6 +146,30 @@ const BasicsForm: React.FC<BasicsFormProps> = ({ formData, updateFormData, onNex
           );
         })}
       </div>
+
+      <div className="flex items-start gap-3 mt-6">
+        <input 
+          type="checkbox" 
+          id="dpdpConsent"
+          checked={consentGiven}
+          onChange={(e) => {
+             setConsentGiven(e.target.checked);
+             if (e.target.checked) {
+                setErrors(prev => { const e = {...prev}; delete e.consent; return e; });
+             }
+          }}
+          className="mt-1 w-4 h-4 text-rose-500 bg-gray-100 border-gray-300 rounded focus:ring-rose-500 focus:ring-2"
+        />
+        <label htmlFor="dpdpConsent" className="text-xs text-gray-500 leading-relaxed">
+           I consent to the collection and processing of my name, email, and provided personal data (including partner details) to generate the proposal link, in accordance with the <a href="/privacy" target="_blank" className="text-rose-500 underline">Privacy Policy</a> and <a href="/terms" target="_blank" className="text-rose-500 underline">Terms of Service</a>. (DPDP Act 2023)
+        </label>
+      </div>
+      {touched.consent && errors.consent && (
+         <p className="flex items-center gap-1.5 text-red-500 text-xs font-semibold ml-7">
+            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+            {errors.consent}
+         </p>
+      )}
 
       <button
         type="submit"

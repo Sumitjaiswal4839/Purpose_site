@@ -20,19 +20,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/jpg"];
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+    const ALLOWED_TYPES = [
+      "image/jpeg", "image/png", "image/webp", "image/gif", "image/jpg",
+      "video/mp4", "video/webm", "video/ogg",
+      "audio/mpeg", "audio/wav", "audio/ogg", "audio/mp3", "audio/webm"
+    ];
 
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { success: false, error: "File too large. Max size is 10MB." },
+        { success: false, error: "File too large. Max size is 50MB." },
         { status: 413 }
       );
     }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: "Invalid file type. Only JPG, PNG, WEBP, GIF allowed." },
+        { success: false, error: "Invalid file type. Allowed: JPG, PNG, WEBP, GIF, MP4, WEBM, MP3, WAV." },
         { status: 415 }
       );
     }

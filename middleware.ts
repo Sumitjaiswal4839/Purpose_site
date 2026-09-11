@@ -1,10 +1,21 @@
-import { Redis } from '@upstash/redis';
 import { NextResponse, NextRequest } from 'next/server';
+import { redis } from '@/lib/redis';
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-});
+// Fallback in-memory rate limiter (per Edge isolate)
+const fallbackRateLimit = new Map<string, { count: number; expiresAt: number }>();
+
+function checkFallbackRateLimit(key: string, limit: number): boolean {
+  const now = Date.now();
+  const record = fallbackRateLimit.get(key);
+  
+  if (!record || record.expiresAt < now) {
+    fallbackRateLimit.set(key, { count: 1, expiresAt: now + 60000 });
+    return true; // Allowed
+  }
+  
+  record.count += 1;
+  return record.count <= limit;
+}
 
 // ── Per-route rate limits ─────────────────────────────────────────────────────
 function getLimit(pathname: string, method: string): number {
@@ -34,11 +45,26 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (pathname.startsWith('/api/')) {
-    const ip = req.ip || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || '127.0.0.1';
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || '127.0.0.1';
     const limit = getLimit(pathname, req.method);
     const ratelimitKey = `ratelimit:${ip}:${req.method}:${pathname}`;
 
+    // CSRF Protection for state-changing admin routes
+    if (pathname.startsWith('/api/admin/') && req.method !== 'GET') {
+      const origin = req.headers.get('origin');
+      const referer = req.headers.get('referer');
+      const host = req.headers.get('host');
+      
+      const isOriginValid = origin && host && new URL(origin).host === host;
+      const isRefererValid = referer && host && new URL(referer).host === host;
+      
+      if (!isOriginValid && !isRefererValid && process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'CSRF token mismatch or origin missing.' }, { status: 403 });
+      }
+    }
+
     try {
+      if (!redis) throw new Error('Redis not configured');
       const requests = await redis.incr(ratelimitKey);
       if (requests === 1) {
         await redis.expire(ratelimitKey, 60); // 1 minute window
@@ -53,7 +79,15 @@ export async function middleware(req: NextRequest) {
         return applySecurityHeaders(res);
       }
     } catch (err) {
-      console.error('Redis rate limit error:', err);
+      console.error('Redis rate limit error, falling back to memory:', err);
+      if (!checkFallbackRateLimit(ratelimitKey, limit)) {
+        const res = NextResponse.json(
+          { error: 'Too many requests. Please wait before trying again.', retryAfter: 60 },
+          { status: 429 }
+        );
+        res.headers.set('Retry-After', '60');
+        return applySecurityHeaders(res);
+      }
     }
   }
 

@@ -129,8 +129,23 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom gradient divider */}
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+        {/* Legal & Compliance Bar */}
+        <div className="py-6 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400 border-b border-white/[0.06]">
+          <div className="flex flex-wrap items-center gap-6">
+            <Link href="/privacy" className="hover:text-rose-400 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-rose-400 transition-colors">Terms of Service</Link>
+            <Link href="/refund" className="hover:text-rose-400 transition-colors">Refund Policy</Link>
+            <Link href="/api-docs" className="hover:text-rose-400 transition-colors flex items-center gap-1">
+              <span>API Documentation</span>
+              <span className="text-[10px] bg-white/[0.08] px-1.5 py-0.5 rounded text-rose-400 font-mono">v1</span>
+            </Link>
+          </div>
+          <div className="flex items-center gap-4 text-xs">
+            <Link href="/login" className="text-slate-400 hover:text-white transition-colors">Sender Login</Link>
+            <span className="text-slate-700">•</span>
+            <Link href="/admin" className="text-slate-500 hover:text-rose-400 transition-colors">Admin Portal</Link>
+          </div>
+        </div>
 
         {/* Bottom bar */}
         <div className="pt-6 flex flex-col md:flex-row justify-between items-center gap-4">

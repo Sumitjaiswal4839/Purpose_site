@@ -11,6 +11,7 @@ import LanguageToggle from "@/components/LanguageToggle";
 export default function Navbar() {
   const [isHidden, setIsHidden] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { t } = useLanguage();
 
   const scrollY = useScroll().scrollY;
@@ -18,7 +19,25 @@ export default function Navbar() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setIsAdmin(!!localStorage.getItem("adminToken"));
+      const adminActive = !!localStorage.getItem("adminToken");
+      const clientCookie = document.cookie.includes("purpose_logged_in=true");
+      setIsAdmin(adminActive);
+
+      if (adminActive || clientCookie) {
+        setIsLoggedIn(true);
+      }
+
+      // Check server session state
+      fetch("/api/auth/me")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.authenticated) {
+            setIsLoggedIn(true);
+          } else if (!adminActive && !clientCookie) {
+            setIsLoggedIn(false);
+          }
+        })
+        .catch(() => {});
     }
   }, [pathname]);
 
@@ -37,7 +56,7 @@ export default function Navbar() {
   const navLinks = [
     { name: t("nav_home"), path: "/", icon: <Home className="w-4 h-4" /> },
     { name: t("nav_templates"), path: "/templates", icon: <LayoutDashboard className="w-4 h-4" /> },
-    { name: "Dashboard", path: "/dashboard", icon: <User className="w-4 h-4" /> },
+    ...(isLoggedIn ? [{ name: "Dashboard", path: "/dashboard", icon: <User className="w-4 h-4" /> }] : []),
     { name: t("nav_ideas"), path: "/ideas", icon: <Lightbulb className="w-4 h-4" /> },
     { name: t("nav_custom"), path: "/custom-request", icon: <Mail className="w-4 h-4" /> },
     ...(isAdmin ? [{ name: t("nav_admin"), path: "/admin", icon: <Settings className="w-4 h-4" /> }] : []),
@@ -101,16 +120,30 @@ export default function Navbar() {
           {/* Language Toggle & Actions */}
           <div className="ml-2 flex items-center gap-2">
             <LanguageToggle />
-            <Link
-              href="/login"
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                pathname === "/login"
-                  ? "bg-rose-100 text-rose-700"
-                  : "text-gray-600 hover:text-rose-600 hover:bg-rose-50"
-              }`}
-            >
-              Login
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                href="/dashboard"
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  pathname === "/dashboard"
+                    ? "bg-rose-100 text-rose-700"
+                    : "text-gray-700 hover:text-rose-600 hover:bg-rose-50"
+                }`}
+              >
+                <User className="w-3.5 h-3.5" />
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  pathname === "/login"
+                    ? "bg-rose-100 text-rose-700"
+                    : "text-gray-600 hover:text-rose-600 hover:bg-rose-50"
+                }`}
+              >
+                Login
+              </Link>
+            )}
             <Link
               href="/create"
               className="flex items-center gap-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold text-sm shadow-md shadow-rose-300/40 hover:shadow-rose-400/50 hover:scale-105 active:scale-95 transition-all duration-200"

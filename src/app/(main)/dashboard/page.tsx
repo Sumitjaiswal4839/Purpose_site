@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { Heart, Activity, CheckCircle, Clock } from 'lucide-react';
+import LogoutButton from '@/components/auth/LogoutButton';
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
@@ -35,9 +36,12 @@ export default async function DashboardPage() {
             <h1 className="text-4xl font-black text-gray-900 font-serif">Your Dashboard 💌</h1>
             <p className="text-gray-500 font-medium">Logged in as {userEmail}</p>
           </div>
-          <Link href="/create" className="bg-rose-600 text-white px-6 py-3 rounded-full font-black text-sm hover:bg-rose-700 transition-all shadow-lg shadow-rose-200">
-            Create New Proposal
-          </Link>
+          <div className="flex items-center gap-3">
+            <LogoutButton />
+            <Link href="/create" className="bg-rose-600 text-white px-6 py-3 rounded-full font-black text-sm hover:bg-rose-700 transition-all shadow-lg shadow-rose-200">
+              Create New Proposal
+            </Link>
+          </div>
         </div>
 
         {proposals.length === 0 ? (

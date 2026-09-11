@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     // Create session JWT (lasts 7 days)
     const sessionToken = jwt.sign({ email: decoded.email }, process.env.JWT_SECRET || 'fallback-secret-for-dev', { expiresIn: '7d' });
     
-    // Set secure HttpOnly cookie
+    // Set secure HttpOnly session cookie
     response.cookies.set({
       name: 'purpose_session',
       value: sessionToken,
@@ -27,6 +27,17 @@ export async function GET(req: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    });
+
+    // Set client-readable cookie so UI/Navbar can immediately know login state
+    response.cookies.set({
+      name: 'purpose_logged_in',
+      value: 'true',
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
 

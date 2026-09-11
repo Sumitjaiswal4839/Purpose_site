@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "setup-dev": "ts-node scripts/setup-dev.ts",
-    "dev": "SET PRISMA_CLIENT_ENGINE_TYPE=library && next dev",
-    "build": "prisma generate && SET PRISMA_CLIENT_ENGINE_TYPE=library && next build",
+    "dev": "next dev",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "jest"
